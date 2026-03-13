@@ -55,21 +55,26 @@ public class RemarkCommandTest {
     }
 
     /**
-     * Verifies that providing an empty remark clears an existing remark successfully.
+     * Verifies that providing an empty remark clears an existing remark
+     * successfully.
      */
     @Test
     public void execute_deleteRemarkUnfilteredList_success() {
         Person personToEdit = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person personWithRemark = new Person(personToEdit.getName(), personToEdit.getPhone(), personToEdit.getEmail(),
+                personToEdit.getAddress(), new Remark("some text"), personToEdit.getTags());
+        model.setPerson(personToEdit, personWithRemark);
+
         Remark emptyRemark = new Remark("");
         RemarkCommand remarkCommand = new RemarkCommand(INDEX_FIRST_PERSON, emptyRemark);
 
-        Person editedPerson = new Person(personToEdit.getName(), personToEdit.getPhone(), personToEdit.getEmail(),
-                personToEdit.getAddress(), emptyRemark, personToEdit.getTags());
+        Person editedPerson = new Person(personWithRemark.getName(), personWithRemark.getPhone(),
+                personWithRemark.getEmail(), personWithRemark.getAddress(), emptyRemark, personWithRemark.getTags());
         String expectedMessage = String.format(RemarkCommand.MESSAGE_DELETE_REMARK_SUCCESS,
                 Messages.format(editedPerson));
 
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
-        expectedModel.setPerson(personToEdit, editedPerson);
+        expectedModel.setPerson(personWithRemark, editedPerson);
 
         assertCommandSuccess(remarkCommand, model, expectedMessage, expectedModel);
     }
