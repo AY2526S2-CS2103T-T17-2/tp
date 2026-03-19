@@ -1,0 +1,23 @@
+{
+  "rules": {
+    "selector-pseudo-class-no-unknown": [
+      true,
+      {
+        "ignorePseudoClasses": [
+          "default",
+          "disabled",
+          "even",
+          "filled",
+          "focused",
+          "header",
+          "horizontal",
+          "hover",
+          "odd",
+          "pressed",
+          "selected",
+          "vertical"
+        ]
+      }
+    ]
+  }
+}

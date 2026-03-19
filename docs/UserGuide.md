@@ -105,7 +105,7 @@ Format: `star INDEX`
 - Stars the person at the specified `INDEX`.
 - The index refers to the index number shown in the displayed person list.
 - The index **must be a positive integer** 1, 2, 3, …​
-- If the person is already starred, TaskNest shows an informative no-op message.
+- If the person is already starred, AddressBook shows an informative no-op message.
 
 Examples:
 
@@ -121,7 +121,7 @@ Format: `unstar INDEX`
 - Unstars the person at the specified `INDEX`.
 - The index refers to the index number shown in the displayed person list.
 - The index **must be a positive integer** 1, 2, 3, …​
-- If the person is already unstarred, TaskNest shows an informative no-op message.
+- If the person is already unstarred, AddressBook shows an informative no-op message.
 
 Examples:
 
