@@ -30,6 +30,7 @@ class JsonAdaptedPerson {
     private final String email;
     private final String address; // may be null (optional field)
     private final String remark;
+    private final Boolean archived;
     private final Boolean starred;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
 
@@ -40,13 +41,15 @@ class JsonAdaptedPerson {
     public JsonAdaptedPerson(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
             @JsonProperty("remark") String remark,
+            @JsonProperty("archived") Boolean archived,
             @JsonProperty("tags") List<JsonAdaptedTag> tags,
             @JsonProperty("starred") Boolean starred) {
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
-        this.remark = remark;
+        this.remark = remark != null ? remark : "";
+        this.archived = archived;
         this.starred = starred;
         if (tags != null) {
             this.tags.addAll(tags);
@@ -58,7 +61,23 @@ class JsonAdaptedPerson {
      */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             String remark, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, remark, tags, null);
+        this(name, phone, email, address, remark, null, tags, null);
+    }
+
+    /**
+     * Constructs a {@code JsonAdaptedPerson} with explicit archived state and no explicit starred field.
+     */
+    public JsonAdaptedPerson(String name, String phone, String email, String address,
+            String remark, Boolean archived, List<JsonAdaptedTag> tags) {
+        this(name, phone, email, address, remark, archived, tags, null);
+    }
+
+    /**
+     * Constructs a {@code JsonAdaptedPerson} with explicit starred state and no explicit archived field.
+     */
+    public JsonAdaptedPerson(String name, String phone, String email, String address,
+            String remark, List<JsonAdaptedTag> tags, Boolean starred) {
+        this(name, phone, email, address, remark, null, tags, starred);
     }
 
     /**
@@ -70,6 +89,7 @@ class JsonAdaptedPerson {
         email = source.getEmail().value;
         address = source.hasAddress() ? source.getAddress().value : null;
         remark = source.getRemark().value;
+        archived = source.isArchived();
         starred = source.isStarred();
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
@@ -120,11 +140,13 @@ class JsonAdaptedPerson {
             modelAddress = new Address(address);
         }
 
-        final Remark modelRemark = new Remark(remark != null ? remark : "");
-        final boolean modelStarred = starred != null && starred;
+        final Remark modelRemark = new Remark(remark);
+        final boolean modelArchived = Boolean.TRUE.equals(archived);
+        final boolean modelStarred = Boolean.TRUE.equals(starred);
 
         final Set<Tag> modelTags = new HashSet<>(personTags);
-        return new Person(modelName, modelPhone, modelEmail, modelAddress, modelRemark, modelTags, modelStarred);
+        return new Person(modelName, modelPhone, modelEmail, modelAddress,
+            modelRemark, modelArchived, modelTags, modelStarred);
     }
 
 }

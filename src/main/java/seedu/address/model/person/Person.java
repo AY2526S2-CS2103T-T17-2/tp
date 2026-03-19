@@ -25,6 +25,7 @@ public class Person {
     // Data fields
     private final Address address; // optional - may be null
     private final Remark remark;
+    private final boolean isArchived;
     private final Set<Tag> tags = new HashSet<>();
     private final boolean starred;
 
@@ -33,7 +34,7 @@ public class Person {
      * Address may be {@code null} to indicate it was not provided.
      */
     public Person(Name name, Phone phone, Email email, Address address, Remark remark, Set<Tag> tags) {
-        this(name, phone, email, address, remark, tags, false);
+        this(name, phone, email, address, remark, false, tags, false);
     }
 
     /**
@@ -42,6 +43,24 @@ public class Person {
      */
     public Person(Name name, Phone phone, Email email, Address address, Remark remark, Set<Tag> tags,
             boolean starred) {
+        this(name, phone, email, address, remark, false, tags, starred);
+    }
+
+    /**
+     * Creates a Person with all fields including address and archived state.
+     * Address may be {@code null} to indicate it was not provided.
+     */
+    public Person(Name name, Phone phone, Email email, Address address, Remark remark,
+            boolean isArchived, Set<Tag> tags) {
+        this(name, phone, email, address, remark, isArchived, tags, false);
+    }
+
+    /**
+     * Creates a Person with all fields including address, archived state, and starred state.
+     * Address may be {@code null} to indicate it was not provided.
+     */
+    public Person(Name name, Phone phone, Email email, Address address, Remark remark,
+            boolean isArchived, Set<Tag> tags, boolean starred) {
         requireAllNonNull(name, phone, email, remark, tags);
         requireNonNull(name);
         this.name = name;
@@ -49,6 +68,7 @@ public class Person {
         this.email = email;
         this.address = address; // nullable
         this.remark = remark;
+        this.isArchived = isArchived;
         this.tags.addAll(tags);
         this.starred = starred;
     }
@@ -65,6 +85,21 @@ public class Person {
      */
     public Person(Name name, Phone phone, Email email, Remark remark, Set<Tag> tags, boolean starred) {
         this(name, phone, email, null, remark, tags, starred);
+    }
+
+    /**
+     * Creates a Person without an address and with a specific archived state.
+     */
+    public Person(Name name, Phone phone, Email email, Remark remark, boolean isArchived, Set<Tag> tags) {
+        this(name, phone, email, null, remark, isArchived, tags);
+    }
+
+    /**
+     * Creates a Person without an address and with specific archived and starred states.
+     */
+    public Person(Name name, Phone phone, Email email, Remark remark,
+            boolean isArchived, Set<Tag> tags, boolean starred) {
+        this(name, phone, email, null, remark, isArchived, tags, starred);
     }
 
     public Name getName() {
@@ -99,10 +134,31 @@ public class Person {
     }
 
     /**
+     * Returns true if this person is archived.
+     */
+    public boolean isArchived() {
+        return isArchived;
+    }
+
+    /**
+     * Returns a copy of this person with the given archived state.
+     */
+    public Person withArchived(boolean archived) {
+        return new Person(name, phone, email, address, remark, archived, tags, starred);
+    }
+
+    /**
      * Returns true if this person is starred.
      */
     public boolean isStarred() {
         return starred;
+    }
+
+    /**
+     * Returns a copy of this person with the given starred state.
+     */
+    public Person withStarred(boolean starred) {
+        return new Person(name, phone, email, address, remark, isArchived, tags, starred);
     }
 
     /**
@@ -147,6 +203,7 @@ public class Person {
                 && email.equals(otherPerson.email)
                 && Objects.equals(address, otherPerson.address)
                 && remark.equals(otherPerson.remark)
+                && isArchived == otherPerson.isArchived
                 && tags.equals(otherPerson.tags)
                 && starred == otherPerson.starred;
     }
@@ -154,7 +211,7 @@ public class Person {
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, remark, tags, starred);
+        return Objects.hash(name, phone, email, address, remark, isArchived, tags, starred);
     }
 
     @Override
@@ -165,6 +222,7 @@ public class Person {
                 .add("email", email)
                 .add("address", address)
                 .add("remark", remark)
+                .add("isArchived", isArchived)
                 .add("tags", tags)
                 .add("starred", starred)
                 .toString();

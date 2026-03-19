@@ -28,6 +28,7 @@ public class PersonBuilder {
     private Email email;
     private Address address;
     private Remark remark;
+    private boolean isArchived;
     private Set<Tag> tags;
     private boolean starred;
 
@@ -40,6 +41,7 @@ public class PersonBuilder {
         email = new Email(DEFAULT_EMAIL);
         address = new Address(DEFAULT_ADDRESS);
         remark = new Remark(DEFAULT_REMARK);
+        isArchived = false;
         tags = new HashSet<>();
         starred = false;
     }
@@ -53,6 +55,7 @@ public class PersonBuilder {
         email = personToCopy.getEmail();
         address = personToCopy.getAddress();
         remark = personToCopy.getRemark();
+        isArchived = personToCopy.isArchived();
         tags = new HashSet<>(personToCopy.getTags());
         starred = personToCopy.isStarred();
     }
@@ -114,6 +117,14 @@ public class PersonBuilder {
     }
 
     /**
+     * Sets whether the {@code Person} that we are building is archived.
+     */
+    public PersonBuilder withArchived(boolean isArchived) {
+        this.isArchived = isArchived;
+        return this;
+    }
+
+    /**
      * Sets whether the {@code Person} that we are building is starred.
      */
     public PersonBuilder withStarred(boolean starred) {
@@ -122,6 +133,6 @@ public class PersonBuilder {
     }
 
     public Person build() {
-        return new Person(name, phone, email, address, remark, tags, starred);
+        return new Person(name, phone, email, address, remark, isArchived, tags, starred);
     }
 }

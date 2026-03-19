@@ -94,6 +94,8 @@ Shows a list of all contacts in the address book.
 - Starred contacts are always shown before unstarred contacts.
 - Within each group (starred or unstarred), contacts keep the app's existing ordering behavior.
 
+Archived contacts are hidden from normal list views by default.
+
 Format: `list`
 
 ### Starring a person : `star`
@@ -127,6 +129,12 @@ Examples:
 
 - `list` followed by `unstar 2` unstars the 2nd person in the address book.
 - `find Betsy` followed by `unstar 1` unstars the 1st person in the results of the `find` command.
+
+### Listing archived persons : `listarchived`
+
+Shows a list of archived persons in the address book.
+
+Format: `listarchived`
 
 ### Editing a person : `edit`
 
@@ -180,6 +188,32 @@ Examples:
 - `list` followed by `delete 2` deletes the 2nd person in the address book.
 - `find Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
 
+### Archiving a person : `archive`
+
+Archives the specified person without deleting their record.
+
+Format: `archive INDEX`
+
+* Archives the person at the specified `INDEX` in the current displayed list.
+* Archived persons are hidden from `list`, `find`, and `filter` results.
+* Use `listarchived` to view archived contacts.
+
+Examples:
+* `archive 1`
+* `find Alex` followed by `archive 1`
+
+### Unarchiving a person : `unarchive`
+
+Restores an archived person back to the active contact list.
+
+Format: `unarchive INDEX`
+
+* Unarchives the person at the specified `INDEX` in the current displayed list.
+* Recommended flow: `listarchived` followed by `unarchive INDEX`.
+
+Examples:
+* `listarchived` followed by `unarchive 1`
+
 ### Clearing all entries : `clear`
 
 Clears all entries from the address book.
@@ -205,7 +239,7 @@ If your changes to the data file makes its format invalid, AddressBook will disc
 Furthermore, certain edits can cause the AddressBook to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </div>
 
-### Archiving data files `[coming in v2.0]`
+### Backing up data files `[coming in v2.0]`
 
 _Details coming soon ..._
 
@@ -227,15 +261,18 @@ _Details coming soon ..._
 
 ## Command summary
 
-| Action     | Format, Examples                                                                                                                            |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Add**    | `add n/NAME p/PHONE e/EMAIL [a/ADDRESS] [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com t/friend t/colleague` |
-| **Clear**  | `clear`                                                                                                                                     |
-| **Delete** | `delete INDEX`<br> e.g., `delete 3`                                                                                                         |
-| **Edit**   | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`                 |
-| **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`                                                                                  |
-| **List**   | `list`                                                                                                                                      |
-| **Star**   | `star INDEX`<br> e.g., `star 2`                                                                                                             |
-| **Unstar** | `unstar INDEX`<br> e.g., `unstar 2`                                                                                                         |
-| **Exit**   | `exit`                                                                                                                                      |
-| **Help**   | `help`                                                                                                                                      |
+| Action          | Format, Examples                                                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Add**         | `add n/NAME p/PHONE e/EMAIL [a/ADDRESS] [t/TAG]…​`<br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com t/friend t/colleague`    |
+| **Clear**       | `clear`                                                                                                                                     |
+| **Delete**      | `delete INDEX`<br> e.g., `delete 3`                                                                                                         |
+| **Archive**     | `archive INDEX`<br> e.g., `archive 2`                                                                                                       |
+| **Unarchive**   | `unarchive INDEX`<br> e.g., `unarchive 1`                                                                                                   |
+| **Edit**        | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g., `edit 2 n/James Lee e/jameslee@example.com`                  |
+| **Find**        | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`                                                                                 |
+| **List**        | `list`                                                                                                                                      |
+| **ListArchived**| `listarchived`                                                                                                                              |
+| **Star**        | `star INDEX`<br> e.g., `star 2`                                                                                                             |
+| **Unstar**      | `unstar INDEX`<br> e.g., `unstar 2`                                                                                                         |
+| **Exit**        | `exit`                                                                                                                                      |
+| **Help**        | `help`                                                                                                                                      |

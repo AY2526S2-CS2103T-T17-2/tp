@@ -91,6 +91,10 @@ public class PersonTest {
         editedAlice = new PersonBuilder(ALICE).withTags(VALID_TAG_HUSBAND).build();
         assertFalse(ALICE.equals(editedAlice));
 
+        // different archived status -> returns false
+        editedAlice = new PersonBuilder(ALICE).withArchived(true).build();
+        assertFalse(ALICE.equals(editedAlice));
+
         // different starred state -> returns false
         editedAlice = new PersonBuilder(ALICE).withStarred(true).build();
         assertFalse(ALICE.equals(editedAlice));
@@ -100,8 +104,8 @@ public class PersonTest {
     public void toStringMethod() {
         String expected = Person.class.getCanonicalName() + "{name=" + ALICE.getName() + ", phone=" + ALICE.getPhone()
                 + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress()
-                + ", remark=" + ALICE.getRemark() + ", tags=" + ALICE.getTags()
-                + ", starred=" + ALICE.isStarred() + "}";
+                + ", remark=" + ALICE.getRemark() + ", isArchived=" + ALICE.isArchived()
+                + ", tags=" + ALICE.getTags() + ", starred=" + ALICE.isStarred() + "}";
         assertEquals(expected, ALICE.toString());
     }
 
@@ -110,12 +114,14 @@ public class PersonTest {
         Person unstarred = new Person(ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(),
                 ALICE.getRemark(), new HashSet<>(ALICE.getTags()));
         assertFalse(unstarred.hasAddress());
+        assertFalse(unstarred.isArchived());
         assertFalse(unstarred.isStarred());
 
-        Person starred = new Person(ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(),
-                ALICE.getRemark(), new HashSet<>(ALICE.getTags()), true);
-        assertFalse(starred.hasAddress());
-        assertTrue(starred.isStarred());
+        Person archivedAndStarred = new Person(ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(),
+                ALICE.getRemark(), true, new HashSet<>(ALICE.getTags()), true);
+        assertFalse(archivedAndStarred.hasAddress());
+        assertTrue(archivedAndStarred.isArchived());
+        assertTrue(archivedAndStarred.isStarred());
     }
 
     @Test

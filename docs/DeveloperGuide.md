@@ -269,9 +269,52 @@ The following activity diagram summarizes what happens when a user executes a ne
 
 _{more aspects and alternatives to be added}_
 
-### \[Proposed\] Data archiving
+### Data archiving
 
-_{Explain here how the data archiving feature will be implemented}_
+#### Implementation
+
+The data archiving feature is implemented with an `isArchived` flag in `Person`.
+
+- `archive INDEX` marks a contact as archived.
+- `unarchive INDEX` restores an archived contact to active status.
+- `list` shows only active contacts.
+- `listarchived` shows only archived contacts.
+
+The archive status is persisted in JSON storage through `JsonAdaptedPerson` using an `archived` property.
+To preserve backward compatibility with existing save files, missing `archived` values are treated as `false`.
+
+#### Command flow
+
+1. `AddressBookParser` routes `archive` and `unarchive` to their dedicated parsers.
+2. The parsers parse a one-based index using `ParserUtil.parseIndex`.
+3. The command resolves the target `Person` from `Model#getFilteredPersonList`.
+4. The command creates a new `Person` copy with the same fields except updated `isArchived`.
+5. `Model#setPerson` replaces the target person and refreshes the filtered list.
+
+#### Filtering behavior
+
+The app defaults to showing active contacts only.
+
+- `Model.PREDICATE_SHOW_ACTIVE_PERSONS` is used by default list views.
+- `find` and `filter` apply their predicates together with the active predicate.
+- `listarchived` uses `Person::isArchived` to show archived entries explicitly.
+
+#### Design considerations
+
+- Alternative considered: physically moving archived contacts into a separate list.
+    - Rejected because it would complicate storage and command behavior.
+- Current approach: keep a single person list with an archive flag.
+    - Simpler migration path and minimal changes to existing command architecture.
+
+#### Tests
+
+Coverage includes:
+
+- `ArchiveCommandTest` and `UnarchiveCommandTest` for command behavior.
+- `ArchiveCommandParserTest` and `UnarchiveCommandParserTest` for parser validation.
+- `AddressBookParserTest` routing coverage for `archive`, `unarchive`, and `listarchived`.
+- `JsonAdaptedPersonTest` for archive persistence and backward compatibility defaults.
+- `ModelManagerTest` and `PersonTest` regression checks for archive filtering and object semantics.
 
 ---
 
@@ -431,19 +474,59 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
 
 ---
 
-**Use case: UC04 — List all contacts**
+**Use case: UC04 — List active contacts**
 
 **MSS**
 
 1. User enters the `list` command.
-2. TaskNest displays all stored contacts and a count of the total number.
+2. TaskNest displays only active (non-archived) contacts and a count of the total number shown.
 
     Use case ends.
 
 **Extensions**
 
-- 2a. The contact list is empty.
-    - 2a1. TaskNest shows a message indicating the list is empty and prompts the user to add a contact.
+- 2a. There are no active contacts.
+    - 2a1. TaskNest shows an empty list.
+
+        Use case ends.
+
+---
+
+**Use case: UC05 — Archive and unarchive contacts**
+
+**MSS**
+
+1. User enters the `list` command.
+2. TaskNest displays active contacts.
+3. User enters `archive INDEX` for a contact in the list.
+4. TaskNest marks the contact as archived and removes it from active views.
+5. User enters the `listarchived` command.
+6. TaskNest displays archived contacts.
+7. User enters `unarchive INDEX` for a contact in the archived list.
+8. TaskNest marks the contact as active again.
+9. User enters `list` and sees the contact in active contacts.
+
+    Use case ends.
+
+**Extensions**
+
+- 3a. `INDEX` is invalid.
+    - 3a1. TaskNest shows an invalid index error.
+
+        Use case resumes at step 2.
+
+- 3b. Contact is already archived.
+    - 3b1. TaskNest shows an already archived error.
+
+        Use case resumes at step 2.
+
+- 7a. `INDEX` is invalid.
+    - 7a1. TaskNest shows an invalid index error.
+
+        Use case resumes at step 6.
+
+- 7b. Contact is already active.
+    - 7b1. TaskNest shows an already active error.
 
         Use case ends.
 
@@ -499,7 +582,28 @@ testers are expected to do more *exploratory* testing.
 ### Deleting a person
 
 1. Deleting a person while all persons are being shown
-    1. Prerequisites: List all persons using the `list` command. Multiple persons in the list.
+     1. Prerequisites: List active persons using the `list` command. Multiple active persons in the list.
+
+### Archiving and unarchiving a person
+
+1. Archiving a person from active contacts
+     1. Prerequisites: Use `list` to show active contacts with at least one person.
+     2. Test case: `archive 1`<br>
+         Expected: First listed person is archived. Success message shown. Person no longer appears in `list`.
+     3. Test case: `archive 0`<br>
+         Expected: No person is archived. Error details shown.
+
+2. Viewing archived persons
+     1. Prerequisites: At least one archived contact exists.
+     2. Test case: `listarchived`<br>
+         Expected: Only archived contacts are shown.
+
+3. Unarchiving a person
+     1. Prerequisites: Use `listarchived` to show archived contacts with at least one person.
+     2. Test case: `unarchive 1`<br>
+         Expected: First archived contact is restored to active status. Success message shown.
+     3. Test case: `unarchive 0`<br>
+         Expected: No person is unarchived. Error details shown.
 
     1. Test case: `delete 1`<br>
        Expected: First contact is deleted from the list. Details of the deleted contact shown in the status message. Timestamp in the status bar is updated.
