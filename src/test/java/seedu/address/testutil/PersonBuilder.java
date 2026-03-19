@@ -28,6 +28,7 @@ public class PersonBuilder {
     private Email email;
     private Address address;
     private Remark remark;
+    private boolean isArchived;
     private Set<Tag> tags;
 
     /**
@@ -39,6 +40,7 @@ public class PersonBuilder {
         email = new Email(DEFAULT_EMAIL);
         address = new Address(DEFAULT_ADDRESS);
         remark = new Remark(DEFAULT_REMARK);
+        isArchived = false;
         tags = new HashSet<>();
     }
 
@@ -51,6 +53,7 @@ public class PersonBuilder {
         email = personToCopy.getEmail();
         address = personToCopy.getAddress();
         remark = personToCopy.getRemark();
+        isArchived = personToCopy.isArchived();
         tags = new HashSet<>(personToCopy.getTags());
     }
 
@@ -102,8 +105,14 @@ public class PersonBuilder {
         return this;
     }
 
+    /** Sets the archived state of the person being built. */
+    public PersonBuilder withArchived(boolean isArchived) {
+        this.isArchived = isArchived;
+        return this;
+    }
+
     public Person build() {
-        return new Person(name, phone, email, address, remark, tags);
+        return new Person(name, phone, email, address, remark, isArchived, tags);
     }
 
 }

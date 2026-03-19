@@ -243,9 +243,52 @@ The following activity diagram summarizes what happens when a user executes a ne
 
 _{more aspects and alternatives to be added}_
 
-### \[Proposed\] Data archiving
+### Data archiving
 
-_{Explain here how the data archiving feature will be implemented}_
+#### Implementation
+
+The data archiving feature is implemented with an `isArchived` flag in `Person`.
+
+- `archive INDEX` marks a contact as archived.
+- `unarchive INDEX` restores an archived contact to active status.
+- `list` shows only active contacts.
+- `listarchived` shows only archived contacts.
+
+The archive status is persisted in JSON storage through `JsonAdaptedPerson` using an `archived` property.
+To preserve backward compatibility with existing save files, missing `archived` values are treated as `false`.
+
+#### Command flow
+
+1. `AddressBookParser` routes `archive` and `unarchive` to their dedicated parsers.
+2. The parsers parse a one-based index using `ParserUtil.parseIndex`.
+3. The command resolves the target `Person` from `Model#getFilteredPersonList`.
+4. The command creates a new `Person` copy with the same fields except updated `isArchived`.
+5. `Model#setPerson` replaces the target person and refreshes the filtered list.
+
+#### Filtering behavior
+
+The app defaults to showing active contacts only.
+
+- `Model.PREDICATE_SHOW_ACTIVE_PERSONS` is used by default list views.
+- `find` and `filter` apply their predicates together with the active predicate.
+- `listarchived` uses `Person::isArchived` to show archived entries explicitly.
+
+#### Design considerations
+
+- Alternative considered: physically moving archived contacts into a separate list.
+    - Rejected because it would complicate storage and command behavior.
+- Current approach: keep a single person list with an archive flag.
+    - Simpler migration path and minimal changes to existing command architecture.
+
+#### Tests
+
+Coverage includes:
+
+- `ArchiveCommandTest` and `UnarchiveCommandTest` for command behavior.
+- `ArchiveCommandParserTest` and `UnarchiveCommandParserTest` for parser validation.
+- `AddressBookParserTest` routing coverage for `archive`, `unarchive`, and `listarchived`.
+- `JsonAdaptedPersonTest` for archive persistence and backward compatibility defaults.
+- `ModelManagerTest` and `PersonTest` regression checks for archive filtering and object semantics.
 
 ---
 
