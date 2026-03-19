@@ -12,6 +12,8 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BOB;
 
+import java.util.HashSet;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.testutil.PersonBuilder;
@@ -101,5 +103,24 @@ public class PersonTest {
                 + ", remark=" + ALICE.getRemark() + ", tags=" + ALICE.getTags()
                 + ", starred=" + ALICE.isStarred() + "}";
         assertEquals(expected, ALICE.toString());
+    }
+
+    @Test
+    public void constructors_withoutAddress_fieldsSetCorrectly() {
+        Person unstarred = new Person(ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(),
+                ALICE.getRemark(), new HashSet<>(ALICE.getTags()));
+        assertFalse(unstarred.hasAddress());
+        assertFalse(unstarred.isStarred());
+
+        Person starred = new Person(ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(),
+                ALICE.getRemark(), new HashSet<>(ALICE.getTags()), true);
+        assertFalse(starred.hasAddress());
+        assertTrue(starred.isStarred());
+    }
+
+    @Test
+    public void hashCode_sameValues_returnsSameHash() {
+        Person aliceCopy = new PersonBuilder(ALICE).build();
+        assertEquals(ALICE.hashCode(), aliceCopy.hashCode());
     }
 }

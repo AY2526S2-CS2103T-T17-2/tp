@@ -61,7 +61,7 @@ AddressBook Level 3 (AB3) is a **desktop app for managing contacts, optimized fo
   e.g. if the command specifies `help 123`, it will be interpreted as `help`.
 
 - If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
-  </div>
+    </div>
 
 ### Viewing help : `help`
 
@@ -227,14 +227,15 @@ _Details coming soon ..._
 
 ## Command summary
 
-| Action     | Format, Examples                                                                                                                                                      |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague` |
-| **Clear**  | `clear`                                                                                                                                                               |
-| **Delete** | `delete INDEX`<br> e.g., `delete 3`                                                                                                                                   |
-| **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`                                           |
-| **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`                                                                                                            |
-| **List**   | `list`                                                                                                                                                                |
-| **Star**   | `star INDEX`<br> e.g., `star 2`                                                                                                                                       |
-| **Unstar** | `unstar INDEX`<br> e.g., `unstar 2`                                                                                                                                   |
-| **Help**   | `help`                                                                                                                                                                |
+| Action     | Format, Examples                                                                                                                            |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL [a/ADDRESS] [t/TAG]…​` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com t/friend t/colleague` |
+| **Clear**  | `clear`                                                                                                                                     |
+| **Delete** | `delete INDEX`<br> e.g., `delete 3`                                                                                                         |
+| **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`                 |
+| **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`                                                                                  |
+| **List**   | `list`                                                                                                                                      |
+| **Star**   | `star INDEX`<br> e.g., `star 2`                                                                                                             |
+| **Unstar** | `unstar INDEX`<br> e.g., `unstar 2`                                                                                                         |
+| **Exit**   | `exit`                                                                                                                                      |
+| **Help**   | `help`                                                                                                                                      |

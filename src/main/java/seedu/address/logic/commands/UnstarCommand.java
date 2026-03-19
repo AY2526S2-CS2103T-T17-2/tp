@@ -29,7 +29,7 @@ public class UnstarCommand extends Command {
     private final Index targetIndex;
 
     public UnstarCommand(Index targetIndex) {
-        this.targetIndex = targetIndex;
+        this.targetIndex = requireNonNull(targetIndex);
     }
 
     @Override

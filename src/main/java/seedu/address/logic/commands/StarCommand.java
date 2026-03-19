@@ -29,7 +29,7 @@ public class StarCommand extends Command {
     private final Index targetIndex;
 
     public StarCommand(Index targetIndex) {
-        this.targetIndex = targetIndex;
+        this.targetIndex = requireNonNull(targetIndex);
     }
 
     @Override

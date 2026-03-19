@@ -2,7 +2,6 @@ package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.storage.JsonAdaptedPerson.MISSING_FIELD_MESSAGE_FORMAT;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.BENSON;
@@ -19,6 +18,7 @@ import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.testutil.PersonBuilder;
 
 public class JsonAdaptedPersonTest {
     private static final String INVALID_NAME = "R@chel";
@@ -44,10 +44,17 @@ public class JsonAdaptedPersonTest {
 
     @Test
     public void toModelType_starredPerson_roundTripPreservesStarred() throws Exception {
-        Person starredBenson = new Person(BENSON.getName(), BENSON.getPhone(), BENSON.getEmail(),
-                BENSON.getAddress(), BENSON.getRemark(), BENSON.getTags(), true);
-        JsonAdaptedPerson person = new JsonAdaptedPerson(starredBenson);
-        assertTrue(person.toModelType().isStarred());
+        Person starredBenson = new Person(BENSON.getName(), BENSON.getPhone(), BENSON.getEmail(), BENSON.getAddress(),
+                BENSON.getRemark(), BENSON.getTags(), true);
+        Person roundTripped = new JsonAdaptedPerson(starredBenson).toModelType();
+        assertEquals(starredBenson, roundTripped);
+    }
+
+    @Test
+    public void toModelType_personWithoutAddress_roundTripPreservesMissingAddress() throws Exception {
+        Person personWithoutAddress = new PersonBuilder(BENSON).withNoAddress().build();
+        Person roundTripped = new JsonAdaptedPerson(personWithoutAddress).toModelType();
+        assertFalse(roundTripped.hasAddress());
     }
 
     @Test
