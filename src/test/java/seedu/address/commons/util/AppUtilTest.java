@@ -26,7 +26,7 @@ public class AppUtilTest {
     }
 
     @Test
-    public void getImage_resourceExists_illegalArgumentException_returnsNull() {
+    public void getImage_resourceExistsIllegalArgument_returnsNull() {
         String iconPath = "/images/address_book_32.png";
         AppUtil.setImageLoaderForTesting(unused -> {
             throw new IllegalArgumentException("bad url");
@@ -40,7 +40,7 @@ public class AppUtilTest {
     }
 
     @Test
-    public void getImage_resourceExists_runtimeException_dueToJavaFxUnavailable_returnsNull() {
+    public void getImage_resourceExistsJavaFxUnavailable_returnsNull() {
         String iconPath = "/images/address_book_32.png";
         AppUtil.setImageLoaderForTesting(unused -> {
             throw new RuntimeException("No toolkit found");
@@ -54,7 +54,7 @@ public class AppUtilTest {
     }
 
     @Test
-    public void getImage_resourceExists_runtimeException_unexpected_rethrows() {
+    public void getImage_resourceExistsRuntimeException_throws() {
         String iconPath = "/images/address_book_32.png";
         RuntimeException expected = new RuntimeException("boom");
         AppUtil.setImageLoaderForTesting(unused -> {
@@ -70,7 +70,7 @@ public class AppUtilTest {
     }
 
     @Test
-    public void getImage_resourceExists_linkageError_dueToJavaFxUnavailable_returnsNull() {
+    public void getImage_resourceExistsJavaFxUnavailableLinkageError_returnsNull() {
         String iconPath = "/images/address_book_32.png";
         AppUtil.setImageLoaderForTesting(unused -> {
             throw new LinkageError("Graphics Device initialization failed");
@@ -84,7 +84,7 @@ public class AppUtilTest {
     }
 
     @Test
-    public void getImage_resourceExists_linkageError_unexpected_rethrows() {
+    public void getImage_resourceExistsLinkageError_throws() {
         String iconPath = "/images/address_book_32.png";
         LinkageError expected = new LinkageError("boom");
         AppUtil.setImageLoaderForTesting(unused -> {
