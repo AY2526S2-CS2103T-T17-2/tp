@@ -88,6 +88,11 @@ public class StorageManager implements Storage {
     // ================ AliasStorage methods ==============================
 
     @Override
+    public Path getAliasesFilePath() {
+        return aliasStorage.getAliasesFilePath();
+    }
+
+    @Override
     public Optional<Map<String, String>> readAliases() throws DataLoadingException {
         logger.fine("Attempting to read aliases from file");
         return aliasStorage.readAliases();
@@ -102,24 +107,32 @@ public class StorageManager implements Storage {
     // ================ Combined save ==============================
 
     /**
-     * Saves both the address book and alias map, restoring the address book from a temporary backup
-     * if the alias save fails, so the two files remain in a mutually consistent state.
+     * Saves both the address book and alias map, backing up both files beforehand and
+     * restoring them on failure so the two files remain in a mutually consistent state.
      */
     @Override
     public void saveAll(ReadOnlyAddressBook addressBook, Map<String, String> aliases) throws IOException {
         Path abPath = addressBookStorage.getAddressBookFilePath();
-        Path backupPath = abPath.resolveSibling(abPath.getFileName().toString() + ".bak");
-        boolean hadExistingFile = Files.exists(abPath);
-        if (hadExistingFile) {
-            Files.copy(abPath, backupPath, StandardCopyOption.REPLACE_EXISTING);
+        Path abBackupPath = abPath.resolveSibling(abPath.getFileName().toString() + ".bak");
+        boolean hadExistingAbFile = Files.exists(abPath);
+        if (hadExistingAbFile) {
+            Files.copy(abPath, abBackupPath, StandardCopyOption.REPLACE_EXISTING);
         }
+
+        Path aliasPath = aliasStorage.getAliasesFilePath();
+        Path aliasBackupPath = aliasPath.resolveSibling(aliasPath.getFileName().toString() + ".bak");
+        boolean hadExistingAliasFile = Files.exists(aliasPath);
+        if (hadExistingAliasFile) {
+            Files.copy(aliasPath, aliasBackupPath, StandardCopyOption.REPLACE_EXISTING);
+        }
+
         try {
             saveAddressBook(addressBook);
             saveAliases(aliases);
         } catch (IOException e) {
-            if (hadExistingFile) {
+            if (hadExistingAbFile) {
                 try {
-                    Files.move(backupPath, abPath, StandardCopyOption.REPLACE_EXISTING);
+                    Files.move(abBackupPath, abPath, StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException restoreEx) {
                     logger.warning("Could not restore address book backup after partial save: "
                             + restoreEx.getMessage());
@@ -132,12 +145,32 @@ public class StorageManager implements Storage {
                             + cleanupEx.getMessage());
                 }
             }
+            if (hadExistingAliasFile) {
+                try {
+                    Files.move(aliasBackupPath, aliasPath, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException restoreEx) {
+                    logger.warning("Could not restore aliases backup after partial save: "
+                            + restoreEx.getMessage());
+                }
+            } else {
+                try {
+                    Files.deleteIfExists(aliasPath);
+                } catch (IOException cleanupEx) {
+                    logger.warning("Could not clean up partial aliases write: "
+                            + cleanupEx.getMessage());
+                }
+            }
             throw e;
         }
         try {
-            Files.deleteIfExists(backupPath);
+            Files.deleteIfExists(abBackupPath);
         } catch (IOException ignore) {
             logger.fine("Could not delete address book backup after successful save.");
+        }
+        try {
+            Files.deleteIfExists(aliasBackupPath);
+        } catch (IOException ignore) {
+            logger.fine("Could not delete aliases backup after successful save.");
         }
     }
 

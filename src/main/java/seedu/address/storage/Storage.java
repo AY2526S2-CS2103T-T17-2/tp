@@ -32,12 +32,9 @@ public interface Storage extends AddressBookStorage, UserPrefsStorage, AliasStor
 
     /**
      * Saves both the address book and alias map together.
-     * Implementations should ensure that a failure after a partial write does not leave the
-     * two files in an inconsistent state.
+     * Implementers are responsible for atomicity: a failure after a partial write
+     * should not leave the two files in an inconsistent state.
      */
-    default void saveAll(ReadOnlyAddressBook addressBook, Map<String, String> aliases) throws IOException {
-        saveAddressBook(addressBook);
-        saveAliases(aliases);
-    }
+    void saveAll(ReadOnlyAddressBook addressBook, Map<String, String> aliases) throws IOException;
 
 }
