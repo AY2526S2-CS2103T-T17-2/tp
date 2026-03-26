@@ -109,8 +109,17 @@ public class MainApp extends Application {
         try {
             Optional<java.util.Map<String, String>> aliasesOptional = storage.readAliases();
             if (aliasesOptional.isPresent()) {
-                AliasCommand.getAliasRegistry().loadAliases(
+                seedu.address.logic.parser.AliasRegistry.LoadAliasesResult loadResult =
+                        AliasCommand.getAliasRegistry().loadAliases(
                         aliasesOptional.get(), AliasCommand.RESERVED_COMMAND_WORDS);
+                if (loadResult.hasRejectedEntries()) {
+                    logger.warning("Rejected " + loadResult.getRejectedCount()
+                            + " persisted aliases while loading: "
+                            + loadResult.getRejectedEntries().stream()
+                                    .map(seedu.address.logic.parser.AliasRegistry.RejectedAliasEntry::toLogString)
+                                    .reduce((left, right) -> left + "; " + right)
+                                    .orElse(""));
+                }
             } else {
                 AliasCommand.getAliasRegistry().clear();
             }

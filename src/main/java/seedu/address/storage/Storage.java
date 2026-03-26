@@ -32,8 +32,9 @@ public interface Storage extends AddressBookStorage, UserPrefsStorage, AliasStor
 
     /**
      * Saves both the address book and alias map together.
-     * Implementers are responsible for atomicity: a failure after a partial write
-     * should not leave the two files in an inconsistent state.
+     * Implementers should make a best-effort attempt to keep the two files in a
+     * mutually consistent state by rolling back partial writes when an I/O failure
+     * is detected during the save.
      */
     void saveAll(ReadOnlyAddressBook addressBook, Map<String, String> aliases) throws IOException;
 

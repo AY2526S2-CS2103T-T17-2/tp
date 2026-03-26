@@ -84,29 +84,35 @@ public class AliasRegistryTest {
         newAliases.put("a", "add");
         newAliases.put("d", "delete");
 
-        registry.loadAliases(newAliases, Set.of());
+        AliasRegistry.LoadAliasesResult result = registry.loadAliases(newAliases, Set.of());
 
         assertNull(registry.getCommandWord("ls"));
         assertEquals("add", registry.getCommandWord("a"));
         assertEquals("delete", registry.getCommandWord("d"));
+        assertEquals(2, result.getLoadedCount());
+        assertEquals(0, result.getRejectedCount());
     }
 
     @Test
     public void loadAliases_emptyMap_clearsAll() {
         registry.addAlias("ls", "list", Set.of("list"));
-        registry.loadAliases(new HashMap<>(), Set.of());
+        AliasRegistry.LoadAliasesResult result = registry.loadAliases(new HashMap<>(), Set.of());
         assertTrue(registry.getAllAliases().isEmpty());
+        assertEquals(0, result.getLoadedCount());
+        assertEquals(0, result.getRejectedCount());
     }
 
     @Test
     public void loadAliases_nullMap_clearsAll() {
         registry.addAlias("ls", "list", Set.of("list"));
-        registry.loadAliases(null, Set.of());
+        AliasRegistry.LoadAliasesResult result = registry.loadAliases(null, Set.of());
         assertTrue(registry.getAllAliases().isEmpty());
+        assertEquals(0, result.getLoadedCount());
+        assertEquals(0, result.getRejectedCount());
     }
 
     @Test
-    public void loadAliases_skipsReservedAndBlankEntries() {
+    public void loadAliases_reportsReservedAndBlankEntries() {
         Map<String, String> aliases = new HashMap<>();
         aliases.put("list", "list"); // reserved
         aliases.put("", "add"); // blank key
@@ -115,7 +121,7 @@ public class AliasRegistryTest {
         aliases.put("b", null); // null command
         aliases.put("ls", "list"); // valid
 
-        registry.loadAliases(aliases, Set.of("list"));
+        AliasRegistry.LoadAliasesResult result = registry.loadAliases(aliases, Set.of("list"));
 
         assertNull(registry.getCommandWord("list"));
         assertNull(registry.getCommandWord(""));
@@ -123,6 +129,8 @@ public class AliasRegistryTest {
         assertNull(registry.getCommandWord("a"));
         assertNull(registry.getCommandWord("b"));
         assertEquals("list", registry.getCommandWord("ls"));
+        assertEquals(1, result.getLoadedCount());
+        assertEquals(5, result.getRejectedCount());
     }
 
     @Test
@@ -130,9 +138,11 @@ public class AliasRegistryTest {
         Map<String, String> aliases = new HashMap<>();
         aliases.put("ls", "list");
 
-        registry.loadAliases(aliases, null);
+        AliasRegistry.LoadAliasesResult result = registry.loadAliases(aliases, null);
 
         assertEquals("list", registry.getCommandWord("ls"));
+        assertEquals(1, result.getLoadedCount());
+        assertEquals(0, result.getRejectedCount());
     }
 
     @Test

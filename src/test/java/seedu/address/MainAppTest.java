@@ -3,6 +3,7 @@ package seedu.address;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
@@ -81,6 +82,34 @@ public class MainAppTest {
         mainApp.initAliases(storage);
 
         assertEquals("list", AliasCommand.getAliasRegistry().getCommandWord("ls"));
+    }
+
+    @Test
+    public void initAliases_invalidPersistedAliases_loadsOnlyValidEntries() {
+        Map<String, String> aliases = new HashMap<>();
+        aliases.put("ls", "list");
+        aliases.put("list", "list");
+        aliases.put("", "add");
+
+        AliasStorage storage = new AliasStorage() {
+            @Override
+            public Path getAliasesFilePath() {
+                return null;
+            }
+
+            @Override
+            public Optional<Map<String, String>> readAliases() {
+                return Optional.of(aliases);
+            }
+
+            @Override
+            public void saveAliases(Map<String, String> a) throws IOException {}
+        };
+
+        assertDoesNotThrow(() -> mainApp.initAliases(storage));
+        assertEquals("list", AliasCommand.getAliasRegistry().getCommandWord("ls"));
+        assertNull(AliasCommand.getAliasRegistry().getCommandWord("list"));
+        assertNull(AliasCommand.getAliasRegistry().getCommandWord(""));
     }
 
     @Test

@@ -1,18 +1,75 @@
 package seedu.address.logic.parser;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
-
-import seedu.address.commons.core.LogsCenter;
 
 /**
  * Registry for command aliases.
  */
 public class AliasRegistry {
-    private static final Logger logger = LogsCenter.getLogger(AliasRegistry.class);
     private final Map<String, String> aliasMap = new HashMap<>();
+
+    /**
+     * Summary of an alias load operation.
+     */
+    public static class LoadAliasesResult {
+        private final int loadedCount;
+        private final List<RejectedAliasEntry> rejectedEntries;
+
+        LoadAliasesResult(int loadedCount, List<RejectedAliasEntry> rejectedEntries) {
+            this.loadedCount = loadedCount;
+            this.rejectedEntries = List.copyOf(rejectedEntries);
+        }
+
+        public int getLoadedCount() {
+            return loadedCount;
+        }
+
+        public int getRejectedCount() {
+            return rejectedEntries.size();
+        }
+
+        public boolean hasRejectedEntries() {
+            return !rejectedEntries.isEmpty();
+        }
+
+        public List<RejectedAliasEntry> getRejectedEntries() {
+            return rejectedEntries;
+        }
+    }
+
+    /**
+     * Details about a rejected alias entry during loading.
+     */
+    public static class RejectedAliasEntry {
+        private final String alias;
+        private final String commandWord;
+        private final String reason;
+
+        RejectedAliasEntry(String alias, String commandWord, String reason) {
+            this.alias = alias;
+            this.commandWord = commandWord;
+            this.reason = reason;
+        }
+
+        public String getAlias() {
+            return alias;
+        }
+
+        public String getCommandWord() {
+            return commandWord;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+
+        public String toLogString() {
+            return "alias='" + alias + "', command='" + commandWord + "' (" + reason + ")";
+        }
+    }
 
     /**
      * Adds an alias mapping. Returns true if successful, false if conflict or invalid input.
@@ -59,23 +116,46 @@ public class AliasRegistry {
 
     /**
      * Replaces all current aliases with validated entries from the given map.
-     * Entries with blank keys/values or keys that clash with {@code reservedWords} are silently skipped.
+     * Entries with blank keys/values or keys that clash with {@code reservedWords}
+     * are rejected and returned to the caller.
      * If {@code aliases} is null the registry is simply cleared.
      */
-    public void loadAliases(Map<String, String> aliases, Set<String> reservedWords) {
+    public LoadAliasesResult loadAliases(Map<String, String> aliases, Set<String> reservedWords) {
         aliasMap.clear();
         if (aliases == null) {
-            return;
+            return new LoadAliasesResult(0, List.of());
         }
+
         Set<String> reserved = (reservedWords != null) ? reservedWords : Set.of();
+        List<RejectedAliasEntry> rejectedEntries = new java.util.ArrayList<>();
         aliases.forEach((alias, command) -> {
-            if (alias != null && !alias.isBlank()
-                    && command != null && !command.isBlank()
-                    && !reserved.contains(alias)) {
+            String rejectionReason = getRejectionReason(alias, command, reserved);
+            if (rejectionReason == null) {
                 aliasMap.put(alias, command);
             } else {
-                logger.fine("Skipped invalid or reserved alias during load: " + alias);
+                rejectedEntries.add(new RejectedAliasEntry(alias, command, rejectionReason));
             }
         });
+
+        return new LoadAliasesResult(aliasMap.size(), rejectedEntries);
+    }
+
+    private String getRejectionReason(String alias, String commandWord, Set<String> reservedWords) {
+        if (alias == null) {
+            return "alias is null";
+        }
+        if (alias.isBlank()) {
+            return "alias is blank";
+        }
+        if (commandWord == null) {
+            return "command word is null";
+        }
+        if (commandWord.isBlank()) {
+            return "command word is blank";
+        }
+        if (reservedWords.contains(alias)) {
+            return "alias is reserved";
+        }
+        return null;
     }
 }

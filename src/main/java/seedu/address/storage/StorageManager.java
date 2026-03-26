@@ -108,7 +108,8 @@ public class StorageManager implements Storage {
 
     /**
      * Saves both the address book and alias map, backing up both files beforehand and
-     * restoring them on failure so the two files remain in a mutually consistent state.
+      * restoring them on failure when an {@link IOException} is detected so the two files
+      * remain in a mutually consistent state on a best-effort basis.
      */
     @Override
     public void saveAll(ReadOnlyAddressBook addressBook, Map<String, String> aliases) throws IOException {
