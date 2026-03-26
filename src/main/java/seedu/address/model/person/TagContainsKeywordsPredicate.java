@@ -25,6 +25,7 @@ public class TagContainsKeywordsPredicate implements Predicate<Person> {
      */
     public TagContainsKeywordsPredicate(List<String> keywords) {
         requireNonNull(keywords);
+        keywords.forEach(Objects::requireNonNull);
         this.keywords = new ArrayList<>(keywords);
     }
 
