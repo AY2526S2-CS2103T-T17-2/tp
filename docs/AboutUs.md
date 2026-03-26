@@ -11,48 +11,44 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 ### Yong ee
 
-<img src="images/yongtheskill.png" width="200px">
+<img src="images/yongtheskill.png" alt="Yong ee profile photo" width="200px">
 
-[[github](https://github.com/yongtheskill)]
-[[portfolio](team/johndoe.md)]
+[[GitHub](https://github.com/yongtheskill)]
 
 - Role: Developer
 
 ### Ashwin Govind
 
-<img src="images/ashw1ng.png" width="200px">
+<img src="images/ashw1ng.png" alt="Ashwin Govind profile photo" width="200px">
 
-[[github](http://github.com/ashw1ng)]
-[[portfolio](team/johndoe.md)]
+[[GitHub](https://github.com/ashw1ng)]
 
 - Role: Developer
 - Responsibilities: UI
 
 ### Tan Hong Xu
 
-<img src="images/yonktheskill.png" width="200px">
+<img src="images/yonktheskill.png" alt="Tan Hong Xu profile photo" width="200px">
 
-[[github](http://github.com/yonktheskill)] [[portfolio](team/johndoe.md)]
+[[GitHub](https://github.com/yonktheskill)] [[portfolio](team/tanhongxu.md)]
 
 - Role: Developer
 - Responsibilities: Data
 
 ### Ng Shu Kai Alden
 
-<img src="images/aldenngsk.png" width="200px">
+<img src="images/aldenngsk.png" alt="Ng Shu Kai Alden profile photo" width="200px">
 
-[[github](http://github.com/aldenngsk)]
-[[portfolio](team/johndoe.md)]
+[[GitHub](https://github.com/aldenngsk)]
 
 - Role: Developer
 - Responsibilities: Dev Ops + Threading
 
 ### Ng Xiang En Evan
 
-<img src="images/evananann.png" width="200px">
+<img src="images/evananann.png" alt="Ng Xiang En Evan profile photo" width="200px">
 
-[[github](http://github.com/evananann)]
-[[portfolio](team/johndoe.md)]
+[[GitHub](https://github.com/evananann)]
 
 - Role: Developer
 - Responsibilities: UI
