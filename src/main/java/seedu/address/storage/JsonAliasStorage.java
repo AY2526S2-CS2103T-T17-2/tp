@@ -37,12 +37,8 @@ public class JsonAliasStorage implements AliasStorage {
             return Optional.empty();
         }
         logger.fine("Reading aliases from " + filePath);
-        Optional<JsonSerializableAliasRegistry> jsonRegistry =
-                JsonUtil.readJsonFile(filePath, JsonSerializableAliasRegistry.class);
-        if (jsonRegistry.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(jsonRegistry.get().toAliasMap());
+        return JsonUtil.readJsonFile(filePath, JsonSerializableAliasRegistry.class)
+                .map(JsonSerializableAliasRegistry::toAliasMap);
     }
 
     @Override

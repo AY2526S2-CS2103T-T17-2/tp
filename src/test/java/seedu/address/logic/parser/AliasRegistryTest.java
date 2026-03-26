@@ -112,6 +112,7 @@ public class AliasRegistryTest {
         aliases.put("", "add"); // blank key
         aliases.put(null, "find"); // null key
         aliases.put("a", ""); // blank value
+        aliases.put("b", null); // null command
         aliases.put("ls", "list"); // valid
 
         registry.loadAliases(aliases, Set.of("list"));
@@ -120,6 +121,17 @@ public class AliasRegistryTest {
         assertNull(registry.getCommandWord(""));
         assertNull(registry.getCommandWord(null));
         assertNull(registry.getCommandWord("a"));
+        assertNull(registry.getCommandWord("b"));
+        assertEquals("list", registry.getCommandWord("ls"));
+    }
+
+    @Test
+    public void loadAliases_nullReservedWords_treatedAsEmpty() {
+        Map<String, String> aliases = new HashMap<>();
+        aliases.put("ls", "list");
+
+        registry.loadAliases(aliases, null);
+
         assertEquals("list", registry.getCommandWord("ls"));
     }
 

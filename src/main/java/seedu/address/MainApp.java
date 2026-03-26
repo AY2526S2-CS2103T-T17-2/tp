@@ -67,7 +67,7 @@ public class MainApp extends Application {
 
         model = initModelManager(storage, userPrefs);
 
-        initAliases(storage);
+        initAliases(aliasStorage);
 
         logic = new LogicManager(model, storage);
 
@@ -104,7 +104,7 @@ public class MainApp extends Application {
         LogsCenter.init(config);
     }
 
-    private void initAliases(Storage storage) {
+    void initAliases(AliasStorage storage) {
         logger.info("Attempting to load aliases from storage");
         try {
             storage.readAliases().ifPresent(aliases ->
