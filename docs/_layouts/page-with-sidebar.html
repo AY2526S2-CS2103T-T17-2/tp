@@ -3,9 +3,33 @@ layout: default
 ---
 
 <div class="page-with-sidebar">
+  <div class="sidebar-toc-launcher-rail">
+    <button
+      class="sidebar-toc-launcher"
+      id="sidebar-toc-launcher"
+      type="button"
+      aria-expanded="false"
+      aria-controls="sidebar-toc"
+    >
+      Contents
+    </button>
+  </div>
+  <div class="sidebar-toc-backdrop" id="sidebar-toc-backdrop" hidden></div>
+
   <nav class="sidebar-toc" id="sidebar-toc" aria-label="Page contents">
-    <p class="sidebar-toc-title">On this page</p>
-    <ul id="toc-list"></ul>
+    <button
+      class="sidebar-toc-toggle"
+      id="sidebar-toc-toggle"
+      type="button"
+      aria-hidden="true"
+      aria-expanded="false"
+      aria-controls="toc-list"
+      tabindex="-1"
+    >
+      <span class="sidebar-toc-title">On this page</span>
+      <span class="sidebar-toc-toggle-icon" aria-hidden="true"></span>
+    </button>
+    <ul id="toc-list" hidden></ul>
   </nav>
 
   <article class="post sidebar-main-content">
@@ -20,7 +44,41 @@ layout: default
 <script>
   (function () {
     var headings = document.querySelectorAll('.post-content h2, .post-content h3');
+    var toc = document.getElementById('sidebar-toc');
     var tocList = document.getElementById('toc-list');
+    var tocToggle = document.getElementById('sidebar-toc-toggle');
+    var tocLauncher = document.getElementById('sidebar-toc-launcher');
+    var tocBackdrop = document.getElementById('sidebar-toc-backdrop');
+    var desktopQuery = window.matchMedia('(min-width: 1280px)');
+
+    function syncTocToggleState(isExpanded) {
+      var isFunctional = !desktopQuery.matches && isExpanded;
+
+      tocToggle.hidden = desktopQuery.matches;
+      tocToggle.setAttribute('aria-expanded', String(isFunctional));
+
+      if (isFunctional) {
+        tocToggle.removeAttribute('aria-hidden');
+        tocToggle.removeAttribute('tabindex');
+        return;
+      }
+
+      tocToggle.setAttribute('aria-hidden', 'true');
+      tocToggle.setAttribute('tabindex', '-1');
+    }
+
+    function setTocExpanded(isExpanded) {
+      toc.setAttribute('data-mobile-open', String(isExpanded));
+      tocLauncher.setAttribute('aria-expanded', String(isExpanded));
+      tocList.hidden = !isExpanded;
+      tocBackdrop.hidden = !isExpanded;
+      document.body.classList.toggle('sidebar-toc-open', isExpanded && !desktopQuery.matches);
+      syncTocToggleState(isExpanded);
+    }
+
+    function syncTocMode(event) {
+      setTocExpanded(event.matches);
+    }
 
     headings.forEach(function (h) {
       var li = document.createElement('li');
@@ -34,6 +92,28 @@ layout: default
       li.appendChild(a);
       tocList.appendChild(li);
     });
+
+    tocLauncher.addEventListener('click', function () {
+      setTocExpanded(true);
+    });
+
+    tocToggle.addEventListener('click', function () {
+      setTocExpanded(desktopQuery.matches);
+    });
+
+    tocBackdrop.addEventListener('click', function () {
+      if (!desktopQuery.matches) {
+        setTocExpanded(false);
+      }
+    });
+
+    if (typeof desktopQuery.addEventListener === 'function') {
+      desktopQuery.addEventListener('change', syncTocMode);
+    } else if (typeof desktopQuery.addListener === 'function') {
+      desktopQuery.addListener(syncTocMode);
+    }
+
+    syncTocMode(desktopQuery);
 
     // Highlight the sidebar link for the heading currently closest to the top
     var links = Array.from(tocList.querySelectorAll('a'));
@@ -53,6 +133,20 @@ layout: default
         );
       });
     }
+
+    links.forEach(function (link) {
+      link.addEventListener('click', function () {
+        if (!desktopQuery.matches) {
+          setTocExpanded(false);
+        }
+      });
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && !desktopQuery.matches) {
+        setTocExpanded(false);
+      }
+    });
 
     window.addEventListener('scroll', setActive, { passive: true });
     setActive();
