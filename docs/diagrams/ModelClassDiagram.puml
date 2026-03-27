@@ -13,11 +13,15 @@ Class ModelManager
 Class UserPrefs
 
 Class UniquePersonList
-Class Person
+Class Person {
+    isArchived : boolean
+    isStarred : boolean
+}
 Class Address
 Class Email
 Class Name
 Class Phone
+Class Remark
 Class Tag
 
 Class I #FFFFFF
@@ -41,6 +45,7 @@ Person *--> Name
 Person *--> Phone
 Person *--> Email
 Person *--> Address
+Person *--> Remark
 Person *--> "*" Tag
 
 Person -[hidden]up--> I
@@ -49,6 +54,7 @@ UniquePersonList -[hidden]right-> I
 Name -[hidden]right-> Phone
 Phone -[hidden]right-> Address
 Address -[hidden]right-> Email
+Email -[hidden]right-> Remark
 
 ModelManager --> "~* filtered" Person
 @enduml
