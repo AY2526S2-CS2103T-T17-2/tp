@@ -1,11 +1,14 @@
 package seedu.address.ui;
 
+import java.io.InputStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import seedu.address.MainApp;
 import seedu.address.commons.core.LogsCenter;
@@ -41,6 +44,11 @@ public class UiManager implements Ui {
     public void start(Stage primaryStage) {
         logger.info("Starting UI...");
 
+        // Pre-load bundled fonts so they are available to CSS on all platforms.
+        loadFontOrWarn("/fonts/NunitoSans-Regular.ttf");
+        loadFontOrWarn("/fonts/NunitoSans-SemiBold.ttf");
+        loadFontOrWarn("/fonts/NunitoSans-Bold.ttf");
+
         //Set the application icon.
         primaryStage.getIcons().add(getImage(ICON_APPLICATION));
 
@@ -65,6 +73,22 @@ public class UiManager implements Ui {
         return new Image(MainApp.class.getResourceAsStream(imagePath));
     }
 
+    private void loadFontOrWarn(String fontPath) {
+        try (InputStream fontStream = UiManager.class.getResourceAsStream(fontPath)) {
+            if (fontStream == null) {
+                logger.warning("Failed to load font: " + fontPath);
+                return;
+            }
+
+            Font loadedFont = Font.loadFont(fontStream, 12);
+            if (loadedFont == null) {
+                logger.warning("Failed to load font: " + fontPath);
+            }
+        } catch (Exception exception) {
+            logger.log(Level.WARNING, "Failed to load font: " + fontPath, exception);
+        }
+    }
+
     void showAlertDialogAndWait(Alert.AlertType type, String title, String headerText, String contentText) {
         showAlertDialogAndWait(mainWindow.getPrimaryStage(), type, title, headerText, contentText);
     }
@@ -76,7 +100,7 @@ public class UiManager implements Ui {
     private static void showAlertDialogAndWait(Stage owner, AlertType type, String title, String headerText,
                                                String contentText) {
         final Alert alert = new Alert(type);
-        alert.getDialogPane().getStylesheets().add("view/DarkTheme.css");
+        alert.getDialogPane().getStylesheets().add("view/Theme.css");
         alert.initOwner(owner);
         alert.setTitle(title);
         alert.setHeaderText(headerText);

@@ -1,0 +1,515 @@
+/*
+ * AddressBook — Card-Based Light Theme
+ * Color System:
+ *   Canvas:      #f0f1f5    (gray app background)
+ *   Card:        #ffffff    (white card surfaces)
+ *   Card-sel:    #eef0ff    (selected card tint)
+ *   Border:      #e4e5eb    (subtle card/input borders)
+ *   Text:        #1a1a2e    (primary)
+ *   Text-sec:    #6b7084    (secondary)
+ *   Text-hint:   #a0a4b8    (placeholder/disabled)
+ *   Accent:      #4f6df5    (blue)
+ *   Star:        #f5a623    (amber)
+ *   Error:       #e5503e    (red)
+ */
+
+/* ===== BUNDLED FONTS ===== */
+
+@font-face {
+    font-family: "Nunito Sans";
+    src: url("../fonts/NunitoSans-Regular.ttf");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Nunito Sans";
+    src: url("../fonts/NunitoSans-SemiBold.ttf");
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Nunito Sans";
+    src: url("../fonts/NunitoSans-Bold.ttf");
+    font-weight: bold;
+    font-style: normal;
+}
+
+/* ===== GLOBAL ===== */
+
+.root {
+    -fx-font-family: "Nunito Sans", "Avenir", "Segoe UI", sans-serif;
+}
+
+.background {
+    -fx-background-color: #f0f1f5;
+    background-color: #f0f1f5;
+}
+
+.label {
+    -fx-font-size: 11pt;
+    -fx-text-fill: #6b7084;
+    -fx-opacity: 1;
+}
+
+.label-bright {
+    -fx-font-size: 11pt;
+    -fx-text-fill: #1a1a2e;
+    -fx-opacity: 1;
+}
+
+.label-header {
+    -fx-font-size: 32pt;
+    -fx-font-family: "Nunito Sans", "Avenir", "Segoe UI Light", sans-serif;
+    -fx-text-fill: #1a1a2e;
+    -fx-opacity: 1;
+}
+
+.text-field {
+    -fx-font-size: 12pt;
+}
+
+.tab-pane {
+    -fx-padding: 0 0 0 1;
+}
+
+.tab-pane .tab-header-area {
+    -fx-padding: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+/* ===== TABLE VIEW ===== */
+
+.table-view {
+    -fx-base: #f0f1f5;
+    -fx-control-inner-background: #ffffff;
+    -fx-background-color: #f0f1f5;
+    -fx-table-cell-border-color: transparent;
+    -fx-table-header-border-color: transparent;
+    -fx-padding: 5;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header,
+.table-view .filler {
+    -fx-size: 35;
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header .label {
+    -fx-font-size: 20pt;
+    -fx-font-family: "Nunito Sans", "Avenir", "Segoe UI Light", sans-serif;
+    -fx-text-fill: #1a1a2e;
+    -fx-alignment: center-left;
+    -fx-opacity: 1;
+}
+
+.table-view:focused .table-row-cell:filled:focused:selected {
+    -fx-background-color: -fx-focus-color;
+}
+
+/* ===== SPLIT PANE ===== */
+
+.split-pane:horizontal .split-pane-divider {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.split-pane {
+    -fx-border-radius: 0;
+    -fx-border-width: 0;
+    -fx-background-color: #f0f1f5;
+}
+
+/* ===== LIST VIEW & CARDS ===== */
+
+.list-view {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-background-color: #f0f1f5;
+}
+
+.list-cell {
+    -fx-label-padding: 0;
+    -fx-graphic-text-gap: 0;
+    -fx-padding: 3 2 3 2;
+    -fx-background-color: #f0f1f5;
+    -fx-min-height: 0;
+}
+
+.list-cell:filled:even {
+    -fx-background-color: #f0f1f5;
+}
+
+.list-cell:filled:odd {
+    -fx-background-color: #f0f1f5;
+}
+
+.list-cell:filled:selected {
+    -fx-background-color: #f0f1f5;
+}
+
+.list-cell:filled:selected #cardPane {
+    -fx-background-color: #eef0ff;
+    -fx-background-radius: 12;
+    -fx-border-color: #4f6df5;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 12;
+}
+
+.list-cell .label {
+    -fx-text-fill: #1a1a2e;
+}
+
+/* ===== CARD LABELS ===== */
+
+.cell_big_label {
+    -fx-font-family: "Nunito Sans", "Avenir", "Segoe UI Semibold", sans-serif;
+    -fx-font-size: 15px;
+    -fx-text-fill: #1a1a2e;
+    -fx-font-weight: bold;
+}
+
+.cell_small_label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7084;
+    -fx-padding: 1 0 1 0;
+}
+
+/* Feature-specific field styling */
+.cell_phone_label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #3d7c5f;
+    -fx-padding: 0;
+}
+
+.cell_email_label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #4f6df5;
+    -fx-padding: 0;
+}
+
+.cell_address_label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8b6cc1;
+    -fx-padding: 0;
+}
+
+.cell_remark_label {
+    -fx-font-size: 11px;
+    -fx-text-fill: #a0a4b8;
+    -fx-font-style: italic;
+    -fx-padding: 0;
+}
+
+.cell_starred_label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #f5a623;
+    -fx-padding: 0 0 0 5;
+}
+
+/* ===== LAYOUT PANES ===== */
+
+.stack-pane {
+    -fx-background-color: #f0f1f5;
+}
+
+.pane-with-border {
+    -fx-background-color: #f0f1f5;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+/* ===== STATUS BAR ===== */
+
+.status-bar {
+    -fx-background-color: #f0f1f5;
+}
+
+.status-bar .label {
+    -fx-text-fill: #a0a4b8;
+    -fx-padding: 4px;
+    -fx-pref-height: 26px;
+    -fx-font-size: 9pt;
+}
+
+.status-bar-with-border {
+    -fx-background-color: #f0f1f5;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.status-bar-with-border .label {
+    -fx-text-fill: #a0a4b8;
+}
+
+/* ===== RESULT DISPLAY ===== */
+
+.result-display {
+    -fx-background-color: #e4e5eb, #ffffff;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 10, 9;
+    -fx-font-family: "SF Mono", "Cascadia Code", "Fira Code", "Consolas", monospace;
+    -fx-font-size: 11pt;
+    -fx-text-fill: #3a3a50;
+    -fx-border-width: 0;
+}
+
+.result-display:focused {
+    -fx-background-color: #e4e5eb, #ffffff;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 10, 9;
+}
+
+/* ===== GRID PANE ===== */
+
+.grid-pane {
+    -fx-background-color: #f0f1f5;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.grid-pane .stack-pane {
+    -fx-background-color: #f0f1f5;
+}
+
+/* ===== CONTEXT MENU ===== */
+
+.context-menu {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-border-color: #e4e5eb;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 16, 0, 0, 4);
+}
+
+.context-menu .label {
+    -fx-text-fill: #1a1a2e;
+}
+
+/* ===== MENU BAR ===== */
+
+.menu-bar {
+    -fx-background-color: #f0f1f5;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.menu-bar .label {
+    -fx-font-size: 11pt;
+    -fx-text-fill: #6b7084;
+    -fx-opacity: 1;
+}
+
+.menu-bar .menu:hover > .label,
+.menu-bar .menu:showing > .label {
+    -fx-text-fill: #4f6df5;
+}
+
+.menu .left-container {
+    -fx-background-color: #f0f1f5;
+}
+
+/* ===== BUTTONS ===== */
+
+.button {
+    -fx-padding: 6 20 6 20;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 6;
+    -fx-background-color: #4f6df5;
+    -fx-font-size: 10pt;
+    -fx-text-fill: #ffffff;
+    -fx-background-insets: 0;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #3d5bd9;
+}
+
+.button:pressed,
+.button:default:hover:pressed {
+    -fx-background-color: #3350c4;
+    -fx-text-fill: #ffffff;
+}
+
+.button:focused {
+    -fx-border-color: #4f6df5;
+    -fx-border-width: 2;
+    -fx-border-style: solid;
+    -fx-border-radius: 6;
+    -fx-border-insets: -1;
+}
+
+.button:disabled,
+.button:default:disabled {
+    -fx-opacity: 0.4;
+    -fx-background-color: #4f6df5;
+    -fx-text-fill: #ffffff;
+}
+
+.button:default {
+    -fx-background-color: #4f6df5;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+}
+
+.button:default:hover {
+    -fx-background-color: #3d5bd9;
+}
+
+/* ===== DIALOG ===== */
+
+.dialog-pane {
+    -fx-background-color: #ffffff;
+}
+
+.dialog-pane > *.button-bar > *.container {
+    -fx-background-color: #ffffff;
+}
+
+.dialog-pane > *.label.content {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a1a2e;
+}
+
+.dialog-pane:header *.header-panel {
+    -fx-background-color: #f8f8fa;
+}
+
+.dialog-pane:header *.header-panel *.label {
+    -fx-font-size: 18px;
+    -fx-font-style: normal;
+    -fx-fill: #1a1a2e;
+    -fx-text-fill: #1a1a2e;
+}
+
+/* ===== SCROLL BAR — MINIMAL ===== */
+
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #d4d6de;
+    -fx-background-insets: 2;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #b8bac6;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+}
+
+.scroll-bar:vertical .increment-arrow,
+.scroll-bar:vertical .decrement-arrow {
+    -fx-padding: 1 4 1 4;
+}
+
+.scroll-bar:horizontal .increment-arrow,
+.scroll-bar:horizontal .decrement-arrow {
+    -fx-padding: 4 1 4 1;
+}
+
+/* ===== CARD PANE ===== */
+
+#cardPane {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 6, 0, 0, 1);
+    -fx-border-width: 0;
+}
+
+/* ===== COMMAND INPUT ===== */
+
+#commandTypeLabel {
+    -fx-font-size: 11px;
+    -fx-text-fill: #e5503e;
+}
+
+#commandTextField {
+    -fx-background-color: #e4e5eb, #ffffff;
+    -fx-background-insets: 0, 1.5;
+    -fx-background-radius: 10, 8.5;
+    -fx-border-width: 0;
+    -fx-font-family: "SF Mono", "Cascadia Code", "Fira Code", "Consolas", monospace;
+    -fx-font-size: 12pt;
+    -fx-text-fill: #1a1a2e;
+    -fx-prompt-text-fill: #a0a4b8;
+    -fx-padding: 10 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.04), 4, 0, 0, 1);
+}
+
+#commandTextField:focused {
+    -fx-background-color: #4f6df5, #ffffff;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 10, 8;
+    -fx-effect: dropshadow(gaussian, rgba(79, 109, 245, 0.15), 10, 0, 0, 0);
+}
+
+#filterField,
+#personListPanel,
+#personWebpage {
+    -fx-effect: none;
+}
+
+/* ===== RESULT DISPLAY CONTENT ===== */
+
+/* The TextArea internally wraps a ScrollPane > viewport > content.
+   All inner nodes must be transparent so the rounded background-layer
+   border on .result-display is not obscured by rectangular inner fills. */
+
+#resultDisplay .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background-radius: 9;
+    -fx-border-width: 0;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+#resultDisplay .scroll-pane .viewport {
+    -fx-background-color: transparent;
+    -fx-background-radius: 9;
+}
+
+#resultDisplay .content {
+    -fx-background-color: transparent;
+    -fx-background-radius: 9;
+}
+
+/* ===== TAGS ===== */
+
+#tags {
+    -fx-hgap: 5;
+    -fx-vgap: 4;
+    -fx-padding: 3 0 0 0;
+}
+
+#tags .label {
+    -fx-padding: 2 10 2 10;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-font-size: 10;
+    -fx-font-weight: bold;
+}
+

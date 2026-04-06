@@ -1,19 +1,28 @@
 #copyButton, #helpMessage {
-    -fx-text-fill: white;
+    -fx-text-fill: #1a1a2e;
+    -fx-font-family: "Nunito Sans", "Avenir", "Segoe UI", sans-serif;
 }
 
 #copyButton {
-    -fx-background-color: dimgray;
+    -fx-background-color: #4f6df5;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 6 16;
+    -fx-cursor: hand;
 }
 
 #copyButton:hover {
-    -fx-background-color: gray;
+    -fx-background-color: #3d5bd9;
 }
 
 #copyButton:armed {
-    -fx-background-color: darkgray;
+    -fx-background-color: #3350c4;
+    -fx-text-fill: #ffffff;
 }
 
 #helpMessageContainer {
-    -fx-background-color: derive(#1d1d1d, 20%);
+    -fx-background-color: #f0f1f5;
 }
