@@ -76,7 +76,7 @@ public class PersonCardTest {
             assertFalse(starredIndicator.getText().isEmpty());
 
             assertNotNull(addressLabel);
-            assertEquals(person.getAddress().toString(), addressLabel.getText());
+            assertEquals("\u2302  " + person.getAddress().value, addressLabel.getText());
         });
     }
 
