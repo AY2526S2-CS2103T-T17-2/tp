@@ -64,7 +64,7 @@ public class AddCommand extends Command {
         }
 
         model.addPerson(toAdd);
-        int totalContacts = model.getFilteredPersonList().size();
+        int totalContacts = model.getAddressBook().getPersonList().size();
         return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(toAdd), totalContacts));
     }
 
