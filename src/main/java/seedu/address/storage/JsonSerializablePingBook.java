@@ -59,7 +59,9 @@ class JsonSerializablePingBook {
         AddressBook addressBook = new AddressBook();
         for (JsonAdaptedPerson jsonAdaptedPerson : persons) {
             Person person = jsonAdaptedPerson.toModelType();
-            if (addressBook.hasPerson(person)) {
+            boolean hasDuplicateIdentity = addressBook.getPersonList().stream()
+                    .anyMatch(person::isSamePerson);
+            if (hasDuplicateIdentity) {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_PERSON);
             }
             addressBook.addPerson(person);
