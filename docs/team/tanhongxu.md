@@ -3,9 +3,9 @@ layout: page
 title: Tan Hong Xu's Project Portfolio Page
 ---
 
-## Project: TaskNest
+## Project: PingBook
 
-TaskNest is a desktop task management application used for teaching Software Engineering principles. The user interacts with it using a CLI, and it has a GUI created with JavaFX. It is written in Java.
+PingBook is a desktop contact management application used for teaching Software Engineering principles. The user interacts with it using a CLI, and it has a GUI created with JavaFX. It is written in Java.
 
 Given below are my contributions to the project.
 

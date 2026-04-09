@@ -341,7 +341,7 @@ Coverage includes:
 - Values speed, organisation, and minimal distraction
 - Often overwhelmed by an unstructured contact list and struggles to retrieve specific contact details quickly
 
-**Value proposition**: TaskNest helps users who manage many contacts across multiple commitments to store and organise contact information efficiently, search and retrieve contacts quickly via a fast CLI interface, and reduce clutter as their contact list grows — all faster than a typical mouse/GUI-driven app.
+**Value proposition**: PingBook helps users who manage many contacts across multiple commitments to store and organise contact information efficiently, search and retrieve contacts quickly via a fast CLI interface, and reduce clutter as their contact list grows — all faster than a typical mouse/GUI-driven app.
 
 ### User stories
 
@@ -370,7 +370,7 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
 
 ### Use cases
 
-(For all use cases below, the **System** is `TaskNest` and the **Actor** is the `user`, unless specified otherwise)
+(For all use cases below, the **System** is `PingBook` and the **Actor** is the `user`, unless specified otherwise)
 
 ---
 
@@ -379,21 +379,21 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
 **MSS**
 
 1. User enters the `add` command with the required fields (name, phone, email) and any optional fields (address, tags).
-2. TaskNest validates all provided fields.
-3. TaskNest checks that no duplicate contact (same name and phone) exists.
-4. TaskNest adds the contact and displays a success message with the new contact's details.
+2. PingBook validates all provided fields.
+3. PingBook checks that no duplicate contact (same name and phone) exists.
+4. PingBook adds the contact and displays a success message with the new contact's details.
 
     Use case ends.
 
 **Extensions**
 
 - 2a. One or more fields fail validation.
-    - 2a1. TaskNest shows the relevant error message for the first invalid field.
+    - 2a1. PingBook shows the relevant error message for the first invalid field.
 
         Use case resumes at step 1.
 
 - 3a. A duplicate contact is detected.
-    - 3a1. TaskNest shows a duplicate contact error message.
+    - 3a1. PingBook shows a duplicate contact error message.
 
         Use case resumes at step 1.
 
@@ -404,38 +404,38 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
 **MSS**
 
 1. User enters the `find` command with a keyword.
-2. TaskNest displays all contacts whose name (or other fields) match the keyword.
+2. PingBook displays all contacts whose name (or other fields) match the keyword.
 3. User identifies the index of the contact to edit from the filtered list.
 4. User enters the `edit` command with the contact's index and the fields to update.
-5. TaskNest validates the new field values.
-6. TaskNest updates the contact and displays a success message showing the updated details.
+5. PingBook validates the new field values.
+6. PingBook updates the contact and displays a success message showing the updated details.
 
     Use case ends.
 
 **Extensions**
 
 - 2a. No contacts match the keyword.
-    - 2a1. TaskNest shows a message indicating no results were found.
+    - 2a1. PingBook shows a message indicating no results were found.
 
         Use case ends.
 
 - 4a. The provided index is out of range.
-    - 4a1. TaskNest shows an invalid index error message.
+    - 4a1. PingBook shows an invalid index error message.
 
         Use case resumes at step 3.
 
 - 4b. No fields are provided to the `edit` command.
-    - 4b1. TaskNest shows an error asking the user to specify at least one field.
+    - 4b1. PingBook shows an error asking the user to specify at least one field.
 
         Use case resumes at step 4.
 
 - 5a. A field value fails validation.
-    - 5a1. TaskNest shows the relevant error message.
+    - 5a1. PingBook shows the relevant error message.
 
         Use case resumes at step 4.
 
 - 5b. The edited contact would duplicate an existing contact.
-    - 5b1. TaskNest shows a duplicate contact error and rejects the edit.
+    - 5b1. PingBook shows a duplicate contact error and rejects the edit.
 
         Use case resumes at step 4.
 
@@ -446,29 +446,29 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
 **MSS**
 
 1. User enters the `find` command with a keyword.
-2. TaskNest displays all contacts matching the keyword.
+2. PingBook displays all contacts matching the keyword.
 3. User identifies the index of the contact to delete from the filtered list.
 4. User enters the `delete` command with the contact's index.
-5. TaskNest prompts the user to confirm the deletion.
+5. PingBook prompts the user to confirm the deletion.
 6. User confirms.
-7. TaskNest removes the contact and displays a success message.
+7. PingBook removes the contact and displays a success message.
 
     Use case ends.
 
 **Extensions**
 
 - 2a. No contacts match the keyword.
-    - 2a1. TaskNest shows a message indicating no results were found.
+    - 2a1. PingBook shows a message indicating no results were found.
 
         Use case ends.
 
 - 3a. The provided index is out of range.
-    - 3a1. TaskNest shows an invalid index error message.
+    - 3a1. PingBook shows an invalid index error message.
 
         Use case resumes at step 3.
 
 - 6a. User cancels the confirmation.
-    - 6a1. TaskNest cancels the deletion and shows a cancellation message.
+    - 6a1. PingBook cancels the deletion and shows a cancellation message.
 
         Use case ends.
 
@@ -479,14 +479,14 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
 **MSS**
 
 1. User enters the `list` command.
-2. TaskNest displays only active (non-archived) contacts and a count of the total number shown.
+2. PingBook displays only active (non-archived) contacts and a count of the total number shown.
 
     Use case ends.
 
 **Extensions**
 
 - 2a. There are no active contacts.
-    - 2a1. TaskNest shows an empty list.
+    - 2a1. PingBook shows an empty list.
 
         Use case ends.
 
@@ -497,13 +497,13 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
 **MSS**
 
 1. User enters the `list` command.
-2. TaskNest displays active contacts.
+2. PingBook displays active contacts.
 3. User enters `archive INDEX` for a contact in the list.
-4. TaskNest marks the contact as archived and removes it from active views.
+4. PingBook marks the contact as archived and removes it from active views.
 5. User enters the `listarchived` command.
-6. TaskNest displays archived contacts.
+6. PingBook displays archived contacts.
 7. User enters `unarchive INDEX` for a contact in the archived list.
-8. TaskNest marks the contact as active again.
+8. PingBook marks the contact as active again.
 9. User enters `list` and sees the contact in active contacts.
 
     Use case ends.
@@ -511,22 +511,22 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
 **Extensions**
 
 - 3a. `INDEX` is invalid.
-    - 3a1. TaskNest shows an invalid index error.
+    - 3a1. PingBook shows an invalid index error.
 
         Use case resumes at step 2.
 
 - 3b. Contact is already archived.
-    - 3b1. TaskNest shows an already archived error.
+    - 3b1. PingBook shows an already archived error.
 
         Use case resumes at step 2.
 
 - 7a. `INDEX` is invalid.
-    - 7a1. TaskNest shows an invalid index error.
+    - 7a1. PingBook shows an invalid index error.
 
         Use case resumes at step 6.
 
 - 7b. Contact is already active.
-    - 7b1. TaskNest shows an already active error.
+    - 7b1. PingBook shows an already active error.
 
         Use case ends.
 
@@ -544,14 +544,14 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
 ### Glossary
 
 - **CLI (Command-Line Interface)**: A text-based interface where the user types commands to interact with the application, as opposed to using a mouse and graphical elements.
-- **Contact**: A person whose details (e.g., name, phone number, email address) are stored in TaskNest.
+- **Contact**: A person whose details (e.g., name, phone number, email address) are stored in PingBook.
 - **Duplicate contact**: Two contacts that share the same name (case-insensitive) and phone number, considered to represent the same person.
 - **Index**: The position number displayed next to a contact in the currently visible list. Used to identify which contact a command should act on.
 - **Mainstream OS**: Windows, Linux, Unix, macOS.
 - **MSS (Main Success Scenario)**: The sequence of steps in a use case that describes the most straightforward path to a successful outcome.
-- **MVP (Minimum Viable Product)**: The smallest set of features required to deliver core value to users. For TaskNest, this includes adding, deleting, editing, listing, and searching contacts with basic validation.
+- **MVP (Minimum Viable Product)**: The smallest set of features required to deliver core value to users. For PingBook, this includes adding, deleting, editing, listing, and searching contacts with basic validation.
 - **Tag**: A short alphanumeric label that can be attached to a contact to group or categorise them (e.g., `friend`, `work`, `project-alpha`).
-- **TaskNest**: The name of this contact management application, built for tech-savvy students who manage many contacts across multiple commitments.
+- **PingBook**: The name of this contact management application, built for tech-savvy students who manage many contacts across multiple commitments.
 
 ---
 

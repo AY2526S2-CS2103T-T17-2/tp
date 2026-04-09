@@ -75,7 +75,7 @@ dependencies {
 }
 
 shadowJar {
-    archiveFileName = 'addressbook.jar'
+    archiveFileName = 'pingbook.jar'
 }
 
 defaultTasks 'clean', 'test'
