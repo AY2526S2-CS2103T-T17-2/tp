@@ -91,4 +91,23 @@ public class AliasCommand extends Command {
             throw new CommandException(MESSAGE_USAGE);
         }
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof AliasCommand)) {
+            return false;
+        }
+        AliasCommand otherCmd = (AliasCommand) other;
+        return java.util.Objects.equals(action, otherCmd.action)
+                && java.util.Objects.equals(alias, otherCmd.alias)
+                && java.util.Objects.equals(command, otherCmd.command);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(action, alias, command);
+    }
 }

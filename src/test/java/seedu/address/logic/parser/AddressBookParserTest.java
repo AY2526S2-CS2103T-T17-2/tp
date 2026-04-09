@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.AddCommand;
+import seedu.address.logic.commands.AliasCommand;
 import seedu.address.logic.commands.ArchiveCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.DeleteCommand;
@@ -26,7 +27,9 @@ import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.RemarkCommand;
 import seedu.address.logic.commands.SortCommand;
+import seedu.address.logic.commands.StarCommand;
 import seedu.address.logic.commands.UnarchiveCommand;
+import seedu.address.logic.commands.UnstarCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
@@ -70,6 +73,24 @@ public class AddressBookParserTest {
         DeleteCommand command = (DeleteCommand) parser.parseCommand(
                 DeleteCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased());
         assertEquals(new DeleteCommand(INDEX_FIRST_PERSON), command);
+    }
+
+    /**
+     * Verifies parsing of {@code alias} commands.
+     */
+    @Test
+    public void parseCommand_alias() throws Exception {
+        AliasCommand listCommand = (AliasCommand) parser.parseCommand(
+                AliasCommand.COMMAND_WORD + " list");
+        assertEquals(new AliasCommand("list", null, null), listCommand);
+
+        AliasCommand addCommand = (AliasCommand) parser.parseCommand(
+                AliasCommand.COMMAND_WORD + " add ls list");
+        assertEquals(new AliasCommand("add", "ls", "list"), addCommand);
+
+        AliasCommand removeCommand = (AliasCommand) parser.parseCommand(
+                AliasCommand.COMMAND_WORD + " remove ls");
+        assertEquals(new AliasCommand("remove", "ls", null), removeCommand);
     }
 
     /**
@@ -164,6 +185,16 @@ public class AddressBookParserTest {
     }
 
     /**
+     * Verifies parsing of {@code star} commands.
+     */
+    @Test
+    public void parseCommand_star() throws Exception {
+        StarCommand command = (StarCommand) parser.parseCommand(
+                StarCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased());
+        assertEquals(new StarCommand(INDEX_FIRST_PERSON), command);
+    }
+
+    /**
      * Verifies parsing of {@code unarchive} commands.
      */
     @Test
@@ -171,6 +202,16 @@ public class AddressBookParserTest {
         UnarchiveCommand command = (UnarchiveCommand) parser.parseCommand(
                 UnarchiveCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased());
         assertEquals(new UnarchiveCommand(INDEX_FIRST_PERSON), command);
+    }
+
+    /**
+     * Verifies parsing of {@code unstar} commands.
+     */
+    @Test
+    public void parseCommand_unstar() throws Exception {
+        UnstarCommand command = (UnstarCommand) parser.parseCommand(
+                UnstarCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased());
+        assertEquals(new UnstarCommand(INDEX_FIRST_PERSON), command);
     }
 
     /**
