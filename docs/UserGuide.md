@@ -562,7 +562,7 @@ Shows all your active (non-archived) contacts.
 <span class="example-label">📌 <strong>Example: list all active contacts</strong></span>
 <pre class="example-command">list</pre>
 <span class="example-result-label">✅ <strong>Expected result:</strong></span>
-<pre class="example-result">Listed active contacts and all active contacts appear in the list.</pre>
+<pre class="example-result">Listed all active contacts.</pre>
 </div>
 
 [↑ Back to Table of Contents](#table-of-contents)
@@ -576,7 +576,7 @@ Shows only the contacts whose names contain the words you search for.
 - The search is **case-insensitive**, meaning it does not matter whether you use uppercase or lowercase letters. `alex` matches `Alex`.
 - Only **complete words** are matched. Searching `Al` will not find `Alex`; you need to type the full word `Alex`.
 - If you type multiple keywords, contacts matching **any one** of them are shown. For example, `find wei priya` shows everyone named Wei and everyone named Priya.
-- Only the contact's **name** is searched, not their phone number, email, or tags.
+- Only the contact's **name** is searched. All other fields (phone number, email, address, tags, and remarks) are ignored.
 
 ##### Steps
 
