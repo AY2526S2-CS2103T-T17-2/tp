@@ -167,6 +167,14 @@ The starred contacts feature adds a `starred` boolean state to `Person`, with th
 2. `unstar INDEX` removes the starred state from the person at the displayed index.
 3. Repeating `star` on an already-starred person (or `unstar` on an already-unstarred person) is handled as an informative no-op.
 
+### Argument tokenization invariant
+
+- `ArgumentTokenizer` extracts argument values using the start positions of detected prefixes in the input string.
+- Before extraction, all detected prefix positions are sorted by start index to ensure deterministic traversal order.
+- A non-decreasing-order invariant is checked via `isNonDecreasingPositions(...)` before extraction begins.
+- The invariant check is performed once up front instead of repeating checks inside the extraction loop.
+- This is an internal sanity guard for parser correctness and does not change user-facing command behavior.
+
 #### Model and ordering
 
 - `Person` stores `starred` as a data field (default `false`).
