@@ -274,4 +274,22 @@ public class JsonPingBookStorageTest {
         assertEquals(aliases, storage.readAliases().get());
     }
 
+    // ===================== DataLoadingException propagation =====================
+
+    @Test
+    public void saveAddressBook_malformedFile_throwsIoException() throws Exception {
+        Path filePath = tempPath("malformed_ab.json");
+        java.nio.file.Files.writeString(filePath, "not valid json {{{{{");
+        assertThrows(IOException.class, () ->
+                storageAt(filePath).saveAddressBook(new AddressBook(), filePath));
+    }
+
+    @Test
+    public void saveAliases_malformedFile_throwsIoException() throws Exception {
+        Path filePath = tempPath("malformed_alias.json");
+        java.nio.file.Files.writeString(filePath, "not valid json {{{{{");
+        assertThrows(IOException.class, () ->
+                storageAt(filePath).saveAliases(new HashMap<>()));
+    }
+
 }

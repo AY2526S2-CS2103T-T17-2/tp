@@ -119,6 +119,15 @@ public class StorageManager implements Storage {
         Path abPath = addressBookStorage.getAddressBookFilePath();
         Path aliasPath = aliasStorage.getAliasesFilePath();
 
+        // Guard: shared file path requires both storages to be JsonPingBookStorage.
+        if (abPath.equals(aliasPath)
+                && !(addressBookStorage instanceof JsonPingBookStorage
+                        && aliasStorage instanceof JsonPingBookStorage)) {
+            throw new IllegalStateException(
+                    "Shared-path storage configuration requires both addressBookStorage and aliasStorage"
+                    + " to be JsonPingBookStorage for a safe combined write to " + abPath);
+        }
+
         // When both storages share the same file (e.g. JsonPingBookStorage), do a single atomic write.
         if (abPath.equals(aliasPath) && addressBookStorage instanceof JsonPingBookStorage
                 && aliasStorage instanceof JsonPingBookStorage) {

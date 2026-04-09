@@ -64,7 +64,7 @@ public class MainApp extends Application {
 
         model = initModelManager(storage, userPrefs);
 
-        Path legacyAliasPath = userPrefs.getAddressBookFilePath().getParent().resolve("aliases.json");
+        Path legacyAliasPath = userPrefs.getAddressBookFilePath().resolveSibling("aliases.json");
         initAliases(pingBookStorage, new JsonAliasStorage(legacyAliasPath));
 
         logic = new LogicManager(model, storage);

@@ -109,4 +109,13 @@ public class JsonSerializablePingBookTest {
         assertEquals(new AddressBook(), data.toModelType());
     }
 
+    @Test
+    public void constructor_nullAliases_defaultsToEmpty() throws Exception {
+        // The model-source constructor should handle null aliases gracefully
+        AddressBook book = getTypicalAddressBook();
+        JsonSerializablePingBook serialized = new JsonSerializablePingBook(book, null);
+        assertEquals(new HashMap<>(), serialized.getAliases());
+        assertEquals(book, serialized.toModelType());
+    }
+
 }

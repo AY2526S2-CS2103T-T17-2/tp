@@ -158,6 +158,155 @@ public class MainAppTest {
         assertTrue(AliasCommand.getAliasRegistry().getAllAliases().isEmpty());
     }
 
+    // ================ initAliases with legacy migration ==============================
+
+    @Test
+    public void initAliases_primaryEmpty_migratesFromLegacy() {
+        Map<String, String> legacyAliases = new HashMap<>();
+        legacyAliases.put("ls", "list");
+        legacyAliases.put("a", "add");
+
+        // Primary returns present but empty map
+        AliasStorage primary = stubAliasStorage(Optional.of(new HashMap<>()), false);
+        AliasStorage legacy = stubAliasStorage(Optional.of(legacyAliases), false);
+
+        assertDoesNotThrow(() -> mainApp.initAliases(primary, legacy));
+
+        assertEquals("list", AliasCommand.getAliasRegistry().getCommandWord("ls"));
+        assertEquals("add", AliasCommand.getAliasRegistry().getCommandWord("a"));
+    }
+
+    @Test
+    public void initAliases_legacyRejectedAliases_loadsValidOnly() {
+        Map<String, String> legacyAliases = new HashMap<>();
+        legacyAliases.put("ls", "list");
+        // "list" clashes with reserved command word → should be rejected
+        legacyAliases.put("list", "add");
+
+        AliasStorage primary = stubAliasStorage(Optional.empty(), false);
+        AliasStorage legacy = stubAliasStorage(Optional.of(legacyAliases), false);
+
+        assertDoesNotThrow(() -> mainApp.initAliases(primary, legacy));
+
+        assertEquals("list", AliasCommand.getAliasRegistry().getCommandWord("ls"));
+        assertNull(AliasCommand.getAliasRegistry().getCommandWord("list"));
+    }
+
+    @Test
+    public void initAliases_legacyEmpty_clearsRegistry() {
+        AliasCommand.getAliasRegistry().addAlias("x", "exit", AliasCommand.RESERVED_COMMAND_WORDS);
+
+        AliasStorage primary = stubAliasStorage(Optional.empty(), false);
+        AliasStorage legacy = stubAliasStorage(Optional.of(new HashMap<>()), false);
+
+        assertDoesNotThrow(() -> mainApp.initAliases(primary, legacy));
+
+        assertTrue(AliasCommand.getAliasRegistry().getAllAliases().isEmpty());
+    }
+
+    @Test
+    public void initAliases_legacyThrows_clearsRegistry() {
+        AliasCommand.getAliasRegistry().addAlias("ls", "list", AliasCommand.RESERVED_COMMAND_WORDS);
+
+        AliasStorage primary = stubAliasStorage(Optional.empty(), false);
+        AliasStorage legacyThatThrows = new AliasStorage() {
+            @Override
+            public Path getAliasesFilePath() {
+                return null;
+            }
+            @Override
+            public Optional<Map<String, String>> readAliases() throws DataLoadingException {
+                throw new DataLoadingException(new Exception("legacy read error"));
+            }
+            @Override
+            public void saveAliases(Map<String, String> a) throws IOException {}
+        };
+
+        assertDoesNotThrow(() -> mainApp.initAliases(primary, legacyThatThrows));
+
+        assertTrue(AliasCommand.getAliasRegistry().getAllAliases().isEmpty());
+    }
+
+    @Test
+    public void initAliases_migrationSaveFails_aliasesStillLoaded() {
+        Map<String, String> legacyAliases = new HashMap<>();
+        legacyAliases.put("ls", "list");
+
+        // Primary throws on saveAliases but reads empty successfully
+        AliasStorage primaryThatFailsSave = new AliasStorage() {
+            @Override
+            public Path getAliasesFilePath() {
+                return null;
+            }
+            @Override
+            public Optional<Map<String, String>> readAliases() {
+                return Optional.empty();
+            }
+            @Override
+            public void saveAliases(Map<String, String> a) throws IOException {
+                throw new IOException("save failed");
+            }
+        };
+        AliasStorage legacy = stubAliasStorage(Optional.of(legacyAliases), false);
+
+        assertDoesNotThrow(() -> mainApp.initAliases(primaryThatFailsSave, legacy));
+
+        // Aliases should still be in registry even though persistence failed
+        assertEquals("list", AliasCommand.getAliasRegistry().getCommandWord("ls"));
+    }
+
+    @Test
+    public void initAliases_primaryNonEmpty_doesNotMigrate() {
+        Map<String, String> primaryAliases = new HashMap<>();
+        primaryAliases.put("d", "delete");
+
+        // Legacy returns aliases that differ - should NOT be loaded
+        Map<String, String> legacyAliases = new HashMap<>();
+        legacyAliases.put("ls", "list");
+
+        AliasStorage primary = stubAliasStorage(Optional.of(primaryAliases), false);
+        // legacy should not be read at all since primary is non-empty
+        AliasStorage legacyThatShouldNotBeRead = new AliasStorage() {
+            @Override
+            public Path getAliasesFilePath() {
+                return null;
+            }
+            @Override
+            public Optional<Map<String, String>> readAliases() throws DataLoadingException {
+                throw new AssertionError("Legacy storage should not be read when primary has aliases");
+            }
+            @Override
+            public void saveAliases(Map<String, String> a) throws IOException {}
+        };
+
+        assertDoesNotThrow(() -> mainApp.initAliases(primary, legacyThatShouldNotBeRead));
+
+        assertEquals("delete", AliasCommand.getAliasRegistry().getCommandWord("d"));
+        assertNull(AliasCommand.getAliasRegistry().getCommandWord("ls"));
+    }
+
+    // ================ helper factories ==============================
+
+    private static AliasStorage stubAliasStorage(Optional<Map<String, String>> readResult,
+            boolean throwOnSave) {
+        return new AliasStorage() {
+            @Override
+            public Path getAliasesFilePath() {
+                return null;
+            }
+            @Override
+            public Optional<Map<String, String>> readAliases() {
+                return readResult;
+            }
+            @Override
+            public void saveAliases(Map<String, String> a) throws IOException {
+                if (throwOnSave) {
+                    throw new IOException("save error");
+                }
+            }
+        };
+    }
+
     // ================ StubStorage inner class ==============================
 
     /**

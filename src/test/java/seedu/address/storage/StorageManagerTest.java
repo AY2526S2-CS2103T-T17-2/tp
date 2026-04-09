@@ -304,6 +304,18 @@ public class StorageManagerTest {
     // ================ saveAll tests ==============================
 
     @Test
+    public void saveAll_sharedPathWithIncompatibleStorages_throwsIllegalStateException() {
+        // Both AB and alias storage point to the same file, but at least one is NOT JsonPingBookStorage.
+        Path sharedPath = getTempFilePath("shared_incompatible");
+        JsonAddressBookStorage abStorage = new JsonAddressBookStorage(sharedPath);
+        JsonAliasStorage aliasStorage = new JsonAliasStorage(sharedPath);
+        StorageManager sm = new StorageManager(abStorage,
+                new JsonUserPrefsStorage(getTempFilePath("prefs")), aliasStorage);
+
+        assertThrows(IllegalStateException.class, () -> sm.saveAll(new AddressBook(), new HashMap<>()));
+    }
+
+    @Test
     public void saveAll_noExistingFiles_savesBothSuccessfully() throws Exception {
         AddressBook book = getTypicalAddressBook();
         Map<String, String> aliases = new HashMap<>();
@@ -619,6 +631,103 @@ public class StorageManagerTest {
         assertTrue(Files.exists(abBackupPath));
         assertTrue(Files.exists(aliasBackupPath));
     }
+
+    // ================ saveAll – shared JsonPingBookStorage (combined write path) ==============================
+
+    /** Helper: builds a StorageManager backed by the same JsonPingBookStorage for both AB and alias. */
+    private StorageManager sharedPingBookStorageManager(JsonPingBookStorage ping) {
+        return new StorageManager(ping, new JsonUserPrefsStorage(getTempFilePath("prefs")), ping);
+    }
+
+    @Test
+    public void saveAll_sharedStorage_savesBoth() throws Exception {
+        Path path = getTempFilePath("ping_shared.json");
+        JsonPingBookStorage ping = new JsonPingBookStorage(path);
+        StorageManager sm = sharedPingBookStorageManager(ping);
+
+        AddressBook book = getTypicalAddressBook();
+        Map<String, String> aliases = new HashMap<>();
+        aliases.put("ls", "list");
+
+        sm.saveAll(book, aliases);
+
+        assertEquals(book, new AddressBook(ping.readAddressBook().get()));
+        assertEquals(aliases, ping.readAliases().get());
+        assertFalse(Files.exists(path.resolveSibling(path.getFileName() + ".bak")));
+    }
+
+    @Test
+    public void saveAll_sharedStorageExisting_savesAndDeletesBackup() throws Exception {
+        Path path = getTempFilePath("ping_shared2.json");
+        JsonPingBookStorage ping = new JsonPingBookStorage(path);
+        // Pre-populate so a backup is created during saveAll
+        ping.saveAll(new AddressBook(), new HashMap<>());
+
+        StorageManager sm = sharedPingBookStorageManager(ping);
+        AddressBook book = getTypicalAddressBook();
+        Map<String, String> aliases = new HashMap<>();
+        aliases.put("a", "add");
+
+        sm.saveAll(book, aliases);
+
+        assertEquals(book, new AddressBook(ping.readAddressBook().get()));
+        assertEquals(aliases, ping.readAliases().get());
+        // Backup should be cleaned up after successful save
+        assertFalse(Files.exists(path.resolveSibling(path.getFileName() + ".bak")));
+    }
+
+    @Test
+    public void saveAll_sharedStorageSaveFails_restoresBackup() throws Exception {
+        Path path = getTempFilePath("ping_fail_existing.json");
+        JsonPingBookStorage realPing = new JsonPingBookStorage(path);
+
+        // Pre-populate original data
+        AddressBook originalBook = getTypicalAddressBook();
+        Map<String, String> originalAliases = new HashMap<>();
+        originalAliases.put("orig", "list");
+        realPing.saveAll(originalBook, originalAliases);
+
+        // Create a failing variant that throws on the combined saveAll
+        IOException toThrow = new IOException("simulated disk full");
+        JsonPingBookStorage failingPing = new JsonPingBookStorage(path) {
+            @Override
+            public void saveAll(ReadOnlyAddressBook ab, java.util.Map<String, String> al) throws IOException {
+                throw toThrow;
+            }
+        };
+        StorageManager sm = sharedPingBookStorageManager(failingPing);
+
+        assertThrows(IOException.class, () -> sm.saveAll(new AddressBook(), new HashMap<>()));
+
+        // Original file should be restored; backup cleaned up
+        assertFalse(Files.exists(path.resolveSibling(path.getFileName() + ".bak")));
+        assertEquals(originalBook, new AddressBook(realPing.readAddressBook().get()));
+        assertEquals(originalAliases, realPing.readAliases().get());
+    }
+
+    @Test
+    public void saveAll_sharedStorageNewFile_throwsNoLeftovers() throws Exception {
+        Path path = getTempFilePath("ping_fail_new.json");
+        // File must not exist before the save attempt
+        assertFalse(Files.exists(path));
+
+        IOException toThrow = new IOException("simulated disk full");
+        JsonPingBookStorage failingPing = new JsonPingBookStorage(path) {
+            @Override
+            public void saveAll(ReadOnlyAddressBook ab, java.util.Map<String, String> al) throws IOException {
+                throw toThrow;
+            }
+        };
+        StorageManager sm = sharedPingBookStorageManager(failingPing);
+
+        assertThrows(IOException.class, () -> sm.saveAll(new AddressBook(), new HashMap<>()));
+
+        // No partial file should remain
+        assertFalse(Files.exists(path));
+        assertFalse(Files.exists(path.resolveSibling(path.getFileName() + ".bak")));
+    }
+
+    // ================ helpers ==============================
 
     private void assumePosixPermissionsSupported() throws IOException {
         Assumptions.assumeTrue(Files.getFileStore(testFolder).supportsFileAttributeView("posix"));
