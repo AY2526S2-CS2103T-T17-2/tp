@@ -49,6 +49,7 @@ public class PersonCardTest {
             latch.countDown();
         }
         assertTrue(latch.await(FX_TIMEOUT_SECONDS, TimeUnit.SECONDS), "Timed out waiting for JavaFX toolkit startup.");
+        Platform.setImplicitExit(false);
         Throwable throwable = startupThrowable.get();
         assumeTrue(throwable == null, () ->
             "Skipping PersonCardTest because JavaFX is unavailable: " + throwable.getClass().getSimpleName());
