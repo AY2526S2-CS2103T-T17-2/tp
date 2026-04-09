@@ -3,7 +3,7 @@ layout: page
 title: PingBook
 ---
 
-![Ui](images/PingBookUi.png)
+![Ui](images/Ui.png)
 
 **PingBook is a desktop application for managing your contacts quickly using typed commands.** While it has a GUI, most of the user interactions happen using a CLI (Command Line Interface).
 
