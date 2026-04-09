@@ -7,41 +7,48 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <!-- Column ratio: left=40% right=60%. Change percentWidth values here to adjust. -->
-<GridPane id="cardPane" fx:id="cardPane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" minWidth="0.0">
+<StackPane id="cardPane" fx:id="cardPane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" minWidth="0.0">
   <maxHeight><Region fx:constant="USE_PREF_SIZE" /></maxHeight>
-  <padding>
-    <Insets top="10" right="16" bottom="10" left="16" />
-  </padding>
-  <columnConstraints>
-    <ColumnConstraints percentWidth="40" fillWidth="true" minWidth="0" />
-    <ColumnConstraints percentWidth="60" fillWidth="true" minWidth="0" />
-  </columnConstraints>
 
-  <!-- Left column: name, tags -->
-  <VBox GridPane.columnIndex="0" GridPane.valignment="TOP" spacing="3" alignment="TOP_LEFT" minWidth="0.0">
-    <maxHeight><Region fx:constant="USE_PREF_SIZE" /></maxHeight>
-    <HBox spacing="4" alignment="CENTER_LEFT" minWidth="0.0">
-      <Label fx:id="id" styleClass="cell_big_label">
-        <minWidth>
-          <Region fx:constant="USE_PREF_SIZE" />
-        </minWidth>
-      </Label>
-      <Label fx:id="name" text="\$first" styleClass="cell_big_label" wrapText="true" minWidth="0.0"
-             maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
-      <Label fx:id="starredIndicator" styleClass="cell_starred_label" text="&#9733;" visible="false" managed="false" />
-    </HBox>
-    <FlowPane fx:id="tags" minWidth="0.0" />
-  </VBox>
+  <GridPane minWidth="0.0">
+    <padding>
+      <Insets top="10" right="16" bottom="10" left="16" />
+    </padding>
+    <columnConstraints>
+      <ColumnConstraints percentWidth="40" fillWidth="true" minWidth="0" />
+      <ColumnConstraints percentWidth="60" fillWidth="true" minWidth="0" />
+    </columnConstraints>
 
-  <!-- Right column: contact details -->
-  <VBox GridPane.columnIndex="1" GridPane.valignment="TOP" spacing="2" alignment="TOP_LEFT" minWidth="0.0">
-    <maxHeight><Region fx:constant="USE_PREF_SIZE" /></maxHeight>
-    <Label fx:id="phone" styleClass="cell_phone_label" text="\$phone" wrapText="true" minWidth="0.0" />
-    <Label fx:id="email" styleClass="cell_email_label" text="\$email" wrapText="true" minWidth="0.0" />
-    <Label fx:id="address" styleClass="cell_address_label" text="\$address" wrapText="true" minWidth="0.0" />
-    <Label fx:id="remark" styleClass="cell_remark_label" text="\$remark" wrapText="true" minWidth="0.0" />
-  </VBox>
-</GridPane>
+    <!-- Left column: name, tags -->
+    <VBox GridPane.columnIndex="0" GridPane.valignment="TOP" spacing="3" alignment="TOP_LEFT" minWidth="0.0">
+      <maxHeight><Region fx:constant="USE_PREF_SIZE" /></maxHeight>
+      <HBox spacing="4" alignment="CENTER_LEFT" minWidth="0.0">
+        <Label fx:id="id" styleClass="cell_big_label">
+          <minWidth>
+            <Region fx:constant="USE_PREF_SIZE" />
+          </minWidth>
+        </Label>
+        <Label fx:id="name" text="\$first" styleClass="cell_big_label" wrapText="true" minWidth="0.0"
+               maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+      </HBox>
+      <FlowPane fx:id="tags" minWidth="0.0" />
+    </VBox>
+
+    <!-- Right column: contact details -->
+    <VBox GridPane.columnIndex="1" GridPane.valignment="TOP" spacing="2" alignment="TOP_LEFT" minWidth="0.0">
+      <maxHeight><Region fx:constant="USE_PREF_SIZE" /></maxHeight>
+      <Label fx:id="phone" styleClass="cell_phone_label" text="\$phone" wrapText="true" minWidth="0.0" />
+      <Label fx:id="email" styleClass="cell_email_label" text="\$email" wrapText="true" minWidth="0.0" />
+      <Label fx:id="address" styleClass="cell_address_label" text="\$address" wrapText="true" minWidth="0.0" />
+      <Label fx:id="remark" styleClass="cell_remark_label" text="\$remark" wrapText="true" minWidth="0.0" />
+    </VBox>
+  </GridPane>
+
+  <!-- Star overlay pinned to the top-right corner of the card -->
+  <Label fx:id="starredIndicator" styleClass="cell_starred_label" text="&#9733;"
+         visible="false" managed="false" StackPane.alignment="TOP_RIGHT" />
+</StackPane>

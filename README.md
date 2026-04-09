@@ -9,7 +9,7 @@
 - **Value proposition:** PingBook helps overwhelmed students manage their contacts by providing fast, typed commands to add, search, and organise contacts — reducing mental load and improving follow-through.
 
 **Key features:**
-- **Managing contacts** — `add`, `edit`, `remark`, `delete`
+- **Creating/Editing contacts** — `add`, `edit`, `remark`, `delete`
 - **Finding contacts** — `list`, `find` (by name), `filter` (by tag), `sort` (starred first, then alphabetical)
 - **Organising contacts** — `star`/`unstar` to pin important contacts, `archive`/`unarchive`/`listarchived` to hide contacts you rarely need
 - **Command aliases** — create personal shortcuts (e.g. `a` for `add`) to speed up your workflow

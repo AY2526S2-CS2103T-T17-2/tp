@@ -212,7 +212,7 @@
 .cell_starred_label {
     -fx-font-size: 14px;
     -fx-text-fill: #f5a623;
-    -fx-padding: 0 0 0 5;
+    -fx-padding: 10 16 0 0;
 }
 
 /* ===== LAYOUT PANES ===== */
