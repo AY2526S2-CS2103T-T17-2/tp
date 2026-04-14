@@ -234,10 +234,12 @@ The `remark` command sets or clears a free-text note on a contact.
 
 - `remark INDEX r/REMARK_TEXT` sets the remark on the person at the displayed index.
 - `remark INDEX r/` clears the existing remark (empty `r/` value).
+- `remark` accepts only one `r/` prefix; repeated `r/` prefixes are rejected as invalid input.
 
 #### Command flow
 
 1. `RemarkCommandParser` parses the one-based index and the `r/` prefix value from the user input.
+    It also validates that `r/` appears at most once.
 2. `RemarkCommand` resolves the target `Person` from `Model#getFilteredPersonList`.
 3. It creates a new `Person` copy via `Person#withRemark(Remark)`, with all other fields unchanged.
 4. `Model#setPerson` replaces the original with the updated copy.
@@ -580,6 +582,11 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
     - 1b1. PingBook clears the existing remark on the contact.
 
         Use case ends.
+
+- 1c. User repeats the `r/` prefix.
+    - 1c1. PingBook rejects the command and shows a duplicate-field validation error.
+
+        Use case resumes at step 1.
 
 ---
 

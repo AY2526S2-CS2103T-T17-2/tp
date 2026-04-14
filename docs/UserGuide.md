@@ -502,6 +502,7 @@ Adds, updates, or removes a free-text note attached to a contact. This is useful
 ##### Format: `remark INDEX r/REMARK`
 
 - To remove an existing remark, type `r/` with nothing after it.
+- Supply `r/` exactly once. Commands with multiple `r/` prefixes are rejected.
 
 ##### Steps
 
