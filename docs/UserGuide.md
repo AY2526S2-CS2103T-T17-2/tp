@@ -290,15 +290,23 @@ Now you need to tell your terminal to "go to" the folder where `pingbook.jar` li
 ##### On Windows
 
 ```shell
-cd C:\Users\yourname\PingBook
+cd C:\Users\yourname\Documents\PingBook
 ```
 
 Replace `yourname` with your actual Windows username. Press **Enter**.
 
-##### On macOS/Linux
+##### On macOS
 
 ```shell
 cd ~/Documents/PingBook
+```
+
+Press **Enter**.
+
+##### On Linux
+
+```shell
+cd ~/PingBook
 ```
 
 Press **Enter**.

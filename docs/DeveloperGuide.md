@@ -166,6 +166,10 @@ The starred contacts feature adds a `starred` boolean state to `Person`, with th
 ### Contact field validation
 
 - Contact field validation is enforced in model value objects and reused by parser and storage paths.
+- `Name` accepts letters, digits, spaces, hyphens, apostrophes, and periods, with these constraints:
+    - must start with a letter or digit
+    - punctuation cannot appear consecutively or at the end of the name
+    - multiple spaces are not allowed
 - `Email` accepts only `local-part@domain` values where:
     - the local part starts and ends with an alphanumeric character and may include `+`, `_`, `.`, or `-` internally
     - the domain contains at least one period separating labels (single-label domains such as `localhost` are rejected)
