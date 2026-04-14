@@ -135,7 +135,7 @@ The `Storage` component,
 - inherits from `AddressBookStorage`, `UserPrefsStorage`, and `AliasStorage`, so it can be treated as any one of those interfaces where only that capability is needed.
 - depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 - uses `JsonPingBookStorage` as a shared implementation of both `AddressBookStorage` and `AliasStorage`, so contacts and aliases are persisted together in the same `data/pingbook.json` file.
-- attempts to recover from a malformed primary `pingbook.json` by reading the adjacent `.bak` backup file first, if one exists.
+- creates a temporary `.bak` backup during combined saves and removes it again after a successful write; if a save is interrupted or a malformed primary file is encountered later, the adjacent `.bak` file can be used to recover both contacts and aliases from the same snapshot.
 
 ### Common classes
 
@@ -253,7 +253,7 @@ The `remark` command sets or clears a free-text note on a contact.
 2. `RemarkCommand` resolves the target `Person` from `Model#getFilteredPersonList`.
 3. It creates a new `Person` copy via `Person#withRemark(Remark)`, with all other fields unchanged.
 4. `Model#setPerson` replaces the original with the updated copy.
-5. The filtered list is reset to active contacts after the edit.
+5. The current view is preserved; the remark command does not change between active and archived views.
 
 #### Model
 
@@ -263,18 +263,18 @@ The `remark` command sets or clears a free-text note on a contact.
 
 ### Filter-by-tag feature
 
-The `filter` command narrows the visible contact list to persons that carry any of the specified tags.
+The `filter` command narrows the visible contact list to persons that carry any of the specified tags. It respects the current view: if you are viewing archived contacts (via `listarchived`), `filter` searches only within archived contacts. Otherwise, it searches within active contacts.
 
 **Syntax**: `filter t/TAG [t/MORE_TAGS]...`
 
 #### Command flow
 
 1. `FilterCommandParser` parses one or more `t/` prefixes into a `TagContainsKeywordsPredicate`.
-2. `FilterCommand` calls `Model#updateFilteredPersonList` with the tag predicate combined (via `Predicate#and`) with `PREDICATE_SHOW_ACTIVE_PERSONS`.
+2. `FilterCommand` calls `Model#updateFilteredPersonList` with the tag predicate combined (via `Predicate#and`) with `Model#getViewPredicate()`.
 
 #### Design note
 
-Combining with `PREDICATE_SHOW_ACTIVE_PERSONS` ensures archived contacts are never surfaced by `filter`, keeping behaviour consistent with the default `list` command.
+Combining with the current `viewPredicate` ensures `filter` respects the user's current view (active or archived), maintaining consistency with what the user expects to see. The `viewPredicate` is set by `list` (active view) or `listarchived` (archived view), and `filter` preserves this context.
 
 ### Sort feature
 
@@ -307,7 +307,7 @@ The `alias` command lets users define persistent shortcuts for built-in command 
 - `JsonPingBookStorage` stores aliases together with contacts inside `data/pingbook.json`.
 - At startup, `MainApp` loads the stored alias map into the shared `AliasRegistry`, rejecting malformed or reserved alias entries while keeping valid ones.
 - After every command, `LogicManager` calls `Storage#saveAll` to persist both the address book and the alias registry atomically.
-- If `pingbook.json` cannot be parsed during startup, `JsonPingBookStorage` attempts to read aliases from `pingbook.json.bak` before giving up.
+- If `pingbook.json` cannot be parsed during startup, `JsonPingBookStorage` recovers both contacts and aliases from `pingbook.json.bak` when that temporary backup is present; if no valid backup exists, startup falls back to an empty address book and an empty alias registry.
 
 #### Design note: alias validation
 
@@ -405,7 +405,7 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
 **MSS**
 
 1. User enters the `find` command with a keyword.
-2. PingBook displays all contacts whose name matches the keyword.
+2. PingBook displays all contacts matching the keyword across any field: name, phone, email, address, remark, or tags.
 3. User identifies the index of the contact to edit from the filtered list.
 4. User enters the `edit` command with the contact's index and the fields to update.
 5. PingBook validates the new field values.
@@ -447,7 +447,7 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
 **MSS**
 
 1. User enters the `find` command with a keyword.
-2. PingBook displays all contacts matching the keyword.
+2. PingBook displays all contacts matching the keyword across any field: name, phone, email, address, remark, or tags.
 3. User identifies the index of the contact to delete from the filtered list.
 4. User enters the `delete` command with the contact's index.
 5. PingBook removes the contact and displays a success message.
@@ -518,7 +518,7 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
         Use case resumes at step 5.
 
 - 6b. Contact is already active.
-    - 6b1. PingBook shows an already active error.
+    - 6b1. PingBook tells the user to run `listarchived` first, then use `unarchive INDEX` on an archived contact.
 
         Use case ends.
 
@@ -529,7 +529,7 @@ Priorities: High (must have) - `* * *`, Medium (should have) - `* *`, Low (nice 
 **MSS**
 
 1. User enters the `filter` command with one or more tags.
-2. PingBook displays all active contacts that carry any of the specified tags.
+2. PingBook displays all contacts in the current view (active or archived) that carry any of the specified tags.
 
     Use case ends.
 
@@ -703,13 +703,12 @@ testers are expected to do more *exploratory* testing.
 
 1. Initial launch
     1. Download the jar file and copy into an empty folder
-
-    1. Double-click the jar file Expected: Shows the GUI with a set of sample contacts. The window size may not be optimum.
+    2. Open a terminal and navigate to the folder containing the jar file, then run `java -jar pingbook.jar`<br>
+       Expected: Shows the GUI with a set of sample contacts. The window size may not be optimum.
 
 1. Saving window preferences
     1. Resize the window to an optimum size. Move the window to a different location. Close the window.
-
-    1. Re-launch the app by double-clicking the jar file.<br>
+    2. Re-launch the app by running `java -jar pingbook.jar` in the terminal.<br>
        Expected: The most recent window size and location is retained.
 
 1. Shutting down
@@ -748,6 +747,265 @@ testers are expected to do more *exploratory* testing.
      3. Test case: `unarchive 0`<br>
          Expected: No person is unarchived. Error details shown.
 
+### Adding a contact
+
+1. Adding a valid contact with all fields
+     1. Prerequisites: At least one contact visible in the list.
+     2. Test case: `add n/Alice Johnson p/87654321 e/alice@example.com a/123 Main St t/colleague`<br>
+        Expected: New contact "Alice Johnson" is added successfully. Confirmation message shows all details. Contact count increases.
+
+2. Adding a contact with minimal required fields
+     1. Test case: `add n/Bob Smith p/91234567 e/bob@example.com`<br>
+        Expected: Contact is added with no address or tags. Confirmation message shows the contact with empty address and tags.
+
+3. Adding a contact with multiple tags
+     1. Test case: `add n/Eve Davis p/88776655 e/eve@example.com t/friend t/colleague t/mentor`<br>
+        Expected: Contact is added successfully with all three tags displayed.
+
+4. Attempting to add a duplicate contact (same name)
+     1. Prerequisites: Existing contact with name "Charlie Brown".
+     2. Test case: `add n/Charlie Brown p/92345678 e/charlie@example.com`<br>
+        Expected: Error message shown. No duplicate is created.
+
+5. Adding a contact with invalid phone number
+     1. Test case: `add n/Frank Moore p/123 e/frank@example.com`<br>
+        Expected: Error message indicating phone number must be 3-15 digits. Contact not added.
+
+6. Adding a contact with invalid email
+     1. Test case: `add n/Grace Lee p/91111111 e/invalid-email`<br>
+        Expected: Error message indicating invalid email format. Contact not added.
+
+### Editing a contact
+
+1. Editing a single field (phone number)
+     1. Prerequisites: List all contacts using `list`. Multiple active contacts visible with at least one contact at index 1.
+     2. Test case: `edit 1 p/98765432`<br>
+        Expected: Contact at index 1 has phone number updated. Confirmation message shows updated contact. Other fields remain unchanged.
+
+2. Editing multiple fields at once
+     1. Prerequisites: Active contacts visible in list.
+     2. Test case: `edit 1 p/98888888 e/newemail@example.com a/456 Park Ave`<br>
+        Expected: All three fields updated. Confirmation shows updated details.
+
+3. Editing tags (replacing all tags)
+     1. Prerequisites: Contact at index 2 has existing tags.
+     2. Test case: `edit 2 t/vip t/important`<br>
+        Expected: All previous tags replaced with new tags. Confirmation shows new tag list.
+
+4. Clearing all tags from a contact
+     1. Prerequisites: Contact at index 3 has tags.
+     2. Test case: `edit 3 t/`<br>
+        Expected: All tags removed. Confirmation shows empty tag list `[]`.
+
+5. Clearing the address field
+     1. Prerequisites: Contact at index 1 has an address.
+     2. Test case: `edit 1 a/`<br>
+        Expected: Address field cleared. Confirmation shows contact without address.
+
+6. Editing with no fields changes
+     1. Test case: `edit 1`<br>
+        Expected: Error message requesting at least one field to be changed.
+
+7. Attempting to edit non-existent contact
+     1. Test case: `edit 999 p/91234567`<br>
+        Expected: Error message. List unchanged.
+
+### Adding a remark
+
+1. Adding a new remark to a contact
+     1. Prerequisites: Contact at index 2 visible in list with no existing remark.
+     2. Test case: `remark 2 r/Prefers email contact`<br>
+        Expected: Remark added successfully. Confirmation message shows contact with remark.
+
+2. Updating an existing remark
+     1. Prerequisites: Contact with existing remark.
+     2. Test case: `remark 1 r/Updated note: Available after 5pm`<br>
+        Expected: Previous remark replaced with new one. Confirmation shows updated contact.
+
+3. Removing a remark
+     1. Prerequisites: Contact with existing remark at index 3.
+     2. Test case: `remark 3 r/`<br>
+        Expected: Remark removed. Confirmation shows contact with empty remark.
+
+4. Adding remark to non-existent contact
+     1. Test case: `remark 999 r/Test remark`<br>
+        Expected: Error message. No changes made.
+
+### Listing contacts
+
+1. Listing all active contacts
+     1. Prerequisites: App has both active and archived contacts.
+     2. Test case: `list`<br>
+        Expected: Only active (non-archived) contacts displayed. Starred contacts appear first. Message confirms number of contacts shown.
+
+2. Listing after filtering/searching
+     1. Prerequisites: Used `find` or `filter` previously showing subset of contacts.
+     2. Test case: `list`<br>
+        Expected: Full list of all active contacts restored. Previous search/filter cleared.
+
+### Searching contacts
+
+1. Searching by name (case-insensitive)
+     1. Prerequisites: Contact "Alice" exists in list.
+     2. Test case: `find alice`<br>
+        Expected: Contact "Alice" is shown. Message indicates number of matching contacts.
+
+2. Searching with partial name match
+     1. Prerequisites: Contacts "Alice" and "Alicia" exist.
+     2. Test case: `find ali`<br>
+        Expected: Both "Alice" and "Alicia" shown (partial matching works).
+
+3. Searching by phone number
+     1. Prerequisites: Contact with phone "87654321" exists.
+     2. Test case: `find 8765`<br>
+        Expected: Contact with matching phone shown.
+
+4. Searching by email
+     1. Test case: `find example.com`<br>
+        Expected: All contacts with "example.com" in email shown.
+
+5. Searching by tag
+     1. Test case: `find colleague`<br>
+        Expected: Contacts with "colleague" tag shown (searches all fields).
+
+6. Searching with multiple keywords
+     1. Prerequisites: Contacts "Wei" and "Priya" exist.
+     2. Test case: `find wei priya`<br>
+        Expected: All contacts matching either "Wei" OR "Priya" shown.
+
+7. Searching with no results
+     1. Test case: `find zzzzzzz`<br>
+        Expected: "0 persons listed!" message. Empty list shown.
+
+### Filtering by tag
+
+1. Filtering by single tag
+     1. Prerequisites: Multiple contacts with tag "ta" in list.
+     2. Test case: `filter t/ta`<br>
+        Expected: Only contacts with "ta" tag shown. Confirmation message shows count.
+
+2. Filtering by multiple tags (OR logic)
+     1. Prerequisites: Contacts with tags "ta", "friend", "colleague" exist.
+     2. Test case: `filter t/ta t/friend`<br>
+        Expected: Contacts with either "ta" OR "friend" tag shown.
+
+3. Filtering with no matching tags
+     1. Test case: `filter t/nonexistenttag`<br>
+        Expected: "0 persons listed!" message.
+
+4. Filtering archived contacts
+     1. Prerequisites: Use `listarchived` to view archived contacts first.
+     2. Test case: `filter t/sometag`<br>
+    Expected: Only archived contacts with matching tag shown because `listarchived` is the current view.
+
+### Sorting contacts
+
+1. Sorting to organize by starred status and name
+     1. Prerequisites: Multiple active and archived contacts with some starred.
+     2. Test case: `sort`<br>
+        Expected: "Sorted all persons (starred first, then by name)" message. Starred contacts appear first, rest alphabetically ordered by name.
+
+2. Sorting while viewing archived contacts
+     1. Prerequisites: Use `listarchived` to view archived contacts first.
+     2. Test case: `sort`<br>
+        Expected: All active and archived contacts sorted in background. When switching back to `list`, sorted order is visible.
+
+### Starring a contact
+
+1. Starring an active contact
+     1. Prerequisites: Active contacts visible in list. Contact at index 1 not starred.
+     2. Test case: `star 1`<br>
+        Expected: "Starred Person: ..." message. Contact now appears at top of list with star icon.
+
+2. Attempting to star an archived contact
+     1. Prerequisites: Use `listarchived` to find archived contact at index 1.
+     2. Test case: `star 1`<br>
+        Expected: Error message. Contact not starred (must unarchive first).
+
+3. Starring invalid index
+     1. Test case: `star 999`<br>
+        Expected: Error message. No changes made.
+
+### Removing a star
+
+1. Unstarring a starred contact
+     1. Prerequisites: Active contact at index 1 that is currently starred.
+     2. Test case: `unstar 1`<br>
+        Expected: "Unstarred Person: ..." message. Star removed. Contact reordered alphabetically.
+
+2. Attempting to unstar archived contact
+     1. Prerequisites: Viewing archived contacts.
+     2. Test case: `unstar 1`<br>
+        Expected: Error message. Contact remains unchanged.
+
+3. Unstarring invalid index
+     1. Test case: `unstar 999`<br>
+        Expected: Error message.
+
+### Creating and managing aliases
+
+1. Adding a new alias
+     1. Test case: `alias add la listarchived`<br>
+        Expected: "Alias 'la' added for command 'listarchived'." message. Alias is usable.
+
+2. Testing alias works
+     1. Prerequisites: Alias "la" created.
+     2. Test case: `la`<br>
+        Expected: `listarchived` command executes as if "listarchived" was typed.
+
+3. Listing all aliases
+     1. Prerequisites: At least one alias created.
+     2. Test case: `alias list`<br>
+        Expected: All created aliases displayed in format "alias -> command".
+
+4. Removing an alias
+     1. Prerequisites: Alias "la" exists.
+     2. Test case: `alias remove la`<br>
+        Expected: "Alias 'la' removed." message. Alias no longer works.
+
+5. Adding alias with name of existing command (conflict)
+     1. Prerequisites: No alias "list" exists yet.
+     2. Test case: `alias add list find`<br>
+        Expected: Error message. Alias not created (conflicts with built-in command).
+
+### Viewing help
+
+1. Opening help window
+     1. Test case: `help`<br>
+        Expected: Help window opens showing link to User Guide. Copy button present.
+
+2. Keyboard shortcut for help
+     1. Test case: Press F1 key<br>
+        Expected: Help window opens (same as `help` command).
+
+### Clearing all contacts
+
+1. Clearing all contacts with confirmation
+     1. Prerequisites: Multiple contacts in address book.
+     2. Test case: `clear confirm`<br>
+        Expected: "PingBook has been cleared!" message. All contacts removed. Contact list empty.
+
+2. Attempting clear without confirmation
+     1. Prerequisites: Multiple contacts exist.
+     2. Test case: `clear`<br>
+        Expected: Reminder message asking to type "clear confirm" to proceed. No contacts deleted.
+
+3. Clearing when no contacts exist
+     1. Prerequisites: Contact list is empty.
+     2. Test case: `clear confirm`<br>
+        Expected: "PingBook has been cleared!" message (even though list was already empty).
+
+### Exiting the app
+
+1. Exiting via command
+     1. Prerequisites: Address book with some contacts and unsaved state.
+     2. Test case: `exit`<br>
+        Expected: App closes. Data automatically saved. On relaunch, all contacts still present.
+
+2. Exiting via window close button
+     1. Test case: Click the X button on the window<br>
+        Expected: App closes with same behavior as `exit` command.
+
 ### Saving data
 
 1. Dealing with a missing data file
@@ -756,8 +1014,8 @@ testers are expected to do more *exploratory* testing.
 
 2. Dealing with a corrupted data file
       1. Open `data/pingbook.json` in a text editor and introduce invalid JSON (e.g., delete a closing brace).<br>
-          Expected: If `data/pingbook.json.bak` exists and is valid, the app recovers contacts and aliases from the backup and logs a warning. If no valid backup exists, the app starts with an empty contact list and logs a warning.
+          Expected: If `data/pingbook.json.bak` exists and is valid, the app recovers contacts and aliases from the backup and logs a warning. If no valid backup exists, the app starts with an empty contact list and an empty alias registry, and logs a warning.
 
 3. Dealing with a missing backup file
       1. Delete `data/pingbook.json.bak` before launching the app.<br>
-          Expected: The app still uses `data/pingbook.json` normally. Backup recovery is simply unavailable until the next save operation creates a fresh `.bak` file.
+          Expected: The app still uses `data/pingbook.json` normally. Backup recovery is unavailable until a save is interrupted or a backup is created manually.

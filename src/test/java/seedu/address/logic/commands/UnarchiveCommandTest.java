@@ -31,7 +31,8 @@ public class UnarchiveCommandTest {
         Person activePerson = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
         Person archivedPerson = activePerson.withArchived(true);
         model.setPerson(activePerson, archivedPerson);
-        model.updateFilteredPersonList(Person::isArchived);
+        model.setViewPredicate(Model.PREDICATE_SHOW_ARCHIVED_PERSONS);
+        model.updateFilteredPersonList(Model.PREDICATE_SHOW_ARCHIVED_PERSONS);
 
         UnarchiveCommand unarchiveCommand = new UnarchiveCommand(INDEX_FIRST_PERSON);
         Person unarchivedPerson = archivedPerson.withArchived(false);
@@ -41,22 +42,39 @@ public class UnarchiveCommandTest {
 
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
         expectedModel.setPerson(archivedPerson, unarchivedPerson);
-        expectedModel.updateFilteredPersonList(Person::isArchived);
+        expectedModel.setViewPredicate(Model.PREDICATE_SHOW_ARCHIVED_PERSONS);
+        expectedModel.updateFilteredPersonList(Model.PREDICATE_SHOW_ARCHIVED_PERSONS);
 
         assertCommandSuccess(unarchiveCommand, model, expectedMessage, expectedModel);
     }
 
     @Test
     public void execute_invalidIndexUnfilteredList_throwsCommandException() {
-        model.updateFilteredPersonList(Person::isArchived);
+        Person activePerson = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person archivedPerson = activePerson.withArchived(true);
+        model.setPerson(activePerson, archivedPerson);
+        model.setViewPredicate(Model.PREDICATE_SHOW_ARCHIVED_PERSONS);
+        model.updateFilteredPersonList(Model.PREDICATE_SHOW_ARCHIVED_PERSONS);
+
         UnarchiveCommand unarchiveCommand = new UnarchiveCommand(INDEX_SECOND_PERSON);
 
         assertCommandFailure(unarchiveCommand, model, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
     }
 
     @Test
-    public void execute_alreadyActive_throwsCommandException() {
+    public void execute_activeView_throwsCommandExceptionWithListArchivedGuidance() {
         UnarchiveCommand unarchiveCommand = new UnarchiveCommand(INDEX_FIRST_PERSON);
+        assertCommandFailure(unarchiveCommand, model,
+                UnarchiveCommand.MESSAGE_NO_ARCHIVED_CONTACTS_SHOWN);
+    }
+
+    @Test
+    public void execute_alreadyActive_throwsCommandException() {
+        model.setViewPredicate(Model.PREDICATE_SHOW_ARCHIVED_PERSONS);
+        model.updateFilteredPersonList(Model.PREDICATE_SHOW_ALL_PERSONS);
+
+        UnarchiveCommand unarchiveCommand = new UnarchiveCommand(INDEX_FIRST_PERSON);
+
         assertCommandFailure(unarchiveCommand, model, UnarchiveCommand.MESSAGE_PERSON_ALREADY_ACTIVE);
     }
 

@@ -7,6 +7,10 @@ import static seedu.address.logic.commands.CommandTestUtil.ADDRESS_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_ADDRESS_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_EMAIL_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_AMY;
+import static seedu.address.logic.commands.CommandTestUtil.VALID_PHONE_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.AMY;
@@ -23,6 +27,7 @@ import seedu.address.commons.core.GuiSettings;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.AliasCommand;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -137,13 +142,43 @@ public class LogicManagerTest {
 
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
-        Person expectedPerson = new PersonBuilder(AMY).withTags().build();
         ModelManager expectedModel = new ModelManager();
-        expectedModel.addPerson(expectedPerson);
         assertCommandFailure(addCommand, CommandException.class,
                 String.format(LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()),
                 expectedModel);
     }
+
+        @Test
+        public void execute_deleteWhenSaveFails_rollsBackInMemoryState() {
+        Person person = new PersonBuilder()
+            .withName(VALID_NAME_AMY)
+            .withPhone(VALID_PHONE_AMY)
+            .withEmail(VALID_EMAIL_AMY)
+            .withAddress(VALID_ADDRESS_AMY)
+            .build();
+        model = new ModelManager(new AddressBookBuilder().withPerson(person).build(), new UserPrefs());
+
+        Path prefPath = temporaryFolder.resolve("DeleteSaveFailureAddressBook.json");
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(prefPath) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook, Path filePath)
+                throws IOException {
+            throw DUMMY_AD_EXCEPTION;
+            }
+        };
+
+        JsonUserPrefsStorage userPrefsStorage =
+            new JsonUserPrefsStorage(temporaryFolder.resolve("DeleteSaveFailureUserPrefs.json"));
+        JsonAliasStorage aliasStorage = new JsonAliasStorage(temporaryFolder.resolve("DeleteSaveFailureAliases.json"));
+        logic = new LogicManager(model, new StorageManager(addressBookStorage, userPrefsStorage, aliasStorage));
+
+        Model expectedModel = new ModelManager(new AddressBookBuilder().withPerson(person).build(), new UserPrefs());
+        assertCommandFailure(DeleteCommand.COMMAND_WORD + " 1", CommandException.class,
+            String.format(LogicManager.FILE_OPS_PERMISSION_ERROR_FORMAT, model.getAddressBookFilePath()),
+            expectedModel);
+        assertEquals(1, logic.getFilteredPersonList().size());
+        assertEquals(person, logic.getFilteredPersonList().get(0));
+        }
 
     @Test
     public void execute_storageThrowsIoException_throwsCommandException() {
@@ -265,9 +300,7 @@ public class LogicManagerTest {
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY
                 + EMAIL_DESC_AMY + ADDRESS_DESC_AMY;
-        Person expectedPerson = new PersonBuilder(AMY).withTags().build();
         ModelManager expectedModel = new ModelManager();
-        expectedModel.addPerson(expectedPerson);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
     }
 }

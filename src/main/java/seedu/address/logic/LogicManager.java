@@ -3,6 +3,7 @@ package seedu.address.logic;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,10 +13,12 @@ import seedu.address.commons.core.LogsCenter;
 import seedu.address.logic.commands.AliasCommand;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.AliasRegistry;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.person.Person;
@@ -59,25 +62,39 @@ public class LogicManager implements Logic {
     public CommandResult execute(String commandText) throws CommandException, ParseException {
         logger.info("----------------[USER COMMAND][" + commandText + "]");
 
-        CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
-        commandResult = command.execute(model);
+        ReadOnlyAddressBook addressBookSnapshot = new AddressBook(model.getAddressBook());
+        Map<String, String> aliasesSnapshot = aliasRegistry.getAllAliases();
+        CommandResult commandResult = command.execute(model);
 
-        try {
-            storage.saveAll(model.getAddressBook(), aliasRegistry.getAllAliases());
-        } catch (AccessDeniedException e) {
-            logger.log(Level.WARNING,
-                    "Address book save failed due to insufficient permissions for file: "
-                            + model.getAddressBookFilePath(),
-                    e);
-            throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT,
-                    model.getAddressBookFilePath()), e);
-        } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Address book save failed due to I/O error", ioe);
-            throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
+        // Skip save for exit command to allow consistent exit behavior
+        if (!(command instanceof ExitCommand)) {
+            try {
+                storage.saveAll(model.getAddressBook(), aliasRegistry.getAllAliases());
+            } catch (AccessDeniedException e) {
+                rollbackState(addressBookSnapshot, aliasesSnapshot);
+                logger.log(Level.WARNING,
+                        "Address book save failed due to insufficient permissions for file: "
+                                + model.getAddressBookFilePath(),
+                        e);
+                throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT,
+                        model.getAddressBookFilePath()), e);
+            } catch (IOException ioe) {
+                rollbackState(addressBookSnapshot, aliasesSnapshot);
+                logger.log(Level.WARNING, "Address book save failed due to I/O error", ioe);
+                throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
+            }
         }
 
         return commandResult;
+    }
+
+    /**
+     * Restores in-memory state to the pre-command snapshot when persistence fails.
+     */
+    private void rollbackState(ReadOnlyAddressBook addressBookSnapshot, Map<String, String> aliasesSnapshot) {
+        model.setAddressBook(addressBookSnapshot);
+        aliasRegistry.loadAliases(aliasesSnapshot, AliasCommand.RESERVED_COMMAND_WORDS);
     }
 
     @Override

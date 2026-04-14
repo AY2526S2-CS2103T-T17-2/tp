@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static seedu.address.model.Model.PREDICATE_SHOW_ARCHIVED_PERSONS;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
@@ -85,6 +86,19 @@ public class RemarkCommandTest {
         RemarkCommand remarkCommand = new RemarkCommand(outOfBoundIndex, new Remark("Any remark"));
 
         assertCommandFailure(remarkCommand, model, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+    }
+
+    @Test
+    public void execute_archivedPerson_throwsCommandException() {
+        Person personToEdit = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person archivedPerson = personToEdit.withArchived(true);
+        model.setPerson(personToEdit, archivedPerson);
+        model.setViewPredicate(PREDICATE_SHOW_ARCHIVED_PERSONS);
+        model.updateFilteredPersonList(PREDICATE_SHOW_ARCHIVED_PERSONS);
+
+        RemarkCommand remarkCommand = new RemarkCommand(INDEX_FIRST_PERSON, new Remark("Archived note"));
+
+        assertCommandFailure(remarkCommand, model, RemarkCommand.MESSAGE_PERSON_ARCHIVED);
     }
 
     /**

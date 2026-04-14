@@ -91,6 +91,7 @@ public class JsonPingBookStorage implements AddressBookStorage, AliasStorage {
 
     private Optional<Map<String, String>> readAliases(Path filePath) throws DataLoadingException {
         try {
+            readAddressBookUnchecked(filePath);
             return readAliasesUnchecked(filePath);
         } catch (DataLoadingException primaryException) {
             return readAliasesFromBackup(filePath, primaryException);

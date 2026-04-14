@@ -66,7 +66,8 @@ The only hard requirement: you can open files and folders on your computer and t
 10. [Data and Storage](#data-and-storage)
 11. [FAQ](#faq)
 12. [Known Issues](#known-issues)
-13. [Command Summary](#command-summary)
+13. [Planned Enhancements](#planned-enhancements)
+14. [Command Summary](#command-summary)
 
 ## Product Description
 
@@ -257,7 +258,7 @@ Your new folder's path will be: `~/Documents/PingBook`
 3. Right-click in an empty area and choose **New Folder** (or **Create Folder**).
 4. Name the folder `PingBook` and press **Enter**.
 
-Your new folder's path will be: `~/PingBook`
+Your new folder's path will be: `~/Documents/PingBook`
 
 **3. Move `pingbook.jar` into the PingBook folder**
 
@@ -398,7 +399,8 @@ Here are the rules for reading command formats throughout this guide:
 ### Index-based command safety
 
 Commands that use `INDEX` always refer to the **currently displayed list**, not a fixed global ordering.
-After commands like `find`, `filter`, `sort`, or `listarchived`, the same contact may appear at a different index.
+After commands like `find`, `filter`, or `listarchived`, the currently displayed contacts may appear at different indices.
+**Note:** The `sort` command is special — it reorders **all** contacts globally (both active and archived), so indices can change even for contacts not currently on your screen.
 To avoid editing/deleting the wrong contact, run `list` (or `listarchived`) and confirm the index immediately before running `edit`, `delete`, `star`, `unstar`, `archive`, or `unarchive`.
 
 ### If a command fails
@@ -406,6 +408,7 @@ To avoid editing/deleting the wrong contact, run `list` (or `listarchived`) and 
 - Read the result display first — it tells you exactly what went wrong.
 - Most failures come from missing prefixes, invalid index values, or wrong field formats.
 - Correct the command and run it again; your existing data is not changed by failed commands.
+- If PingBook cannot save a write command (for example due to file permissions), the command is treated as failed and any in-memory changes are rolled back immediately.
 
 <div markdown="block" class="alert alert-warning">
 ⚠️ <strong>Copying from a PDF?</strong> If you copy a command from a PDF version of this guide and paste it into the command box, check that no extra spaces or line breaks were inserted. If the command does not work, try typing it out manually instead.
@@ -428,10 +431,10 @@ Each prefix (`n/`, `p/`, `e/`, etc.) tells PingBook what type of information fol
 | Field | Required? | Rules |
 |---|---|---|
 | `n/NAME` | Yes | Letters (including accented characters), digits, spaces, hyphens, apostrophes, and periods allowed (e.g. `Anne-Marie`, `O'Brien`, `Dr. Lee`). Must start with a letter or digit, and punctuation cannot appear consecutively or at the end of the name. |
-| `p/PHONE` | Yes | Digits only, 3 to 15 digits long. |
+| `p/PHONE` | Yes | Must contain 3 to 15 digits. You may include spaces, `+`, hyphens, parentheses, and annotation letters (e.g. `+65 9123 4567`, `91234567 (Telegram)`). PingBook stores the phone value as entered. |
 | `e/EMAIL` | Yes | Must follow `localpart@domain` (e.g. `alex@email.com`). The domain must contain period-separated labels (at least one `.`), each label may contain letters/digits and internal hyphens only, and the final label must be at least 2 characters (so `a@localhost` and `doc@doc` are invalid). |
-| `a/ADDRESS` | No | Any text. Can be added later using `edit`. |
-| `t/TAG` | No | Letters and digits are required in each segment; single hyphens may appear between segments, with no spaces or leading, trailing, or consecutive hyphens. Use separate `t/` prefixes for multiple tags. |
+| `a/ADDRESS` | No | Any text, but **extends only until the next prefix is encountered** (e.g. in `a/Block 1 t/friend`, the address is `Block 1` and `t/friend` starts a new tag field). If you need address text that looks like a prefix (e.g. `p/o Box`), use the `edit` command instead to add/modify the address. |
+| `t/TAG` | No | Letters and digits are required in each segment; single hyphens may appear between segments, with no spaces or leading, trailing, or consecutive hyphens. Use separate `t/` prefixes for multiple tags. Tag text is stored as entered, so `friends` and `Friends` are treated as different tag labels in the UI. |
 
 ##### Steps
 
@@ -452,6 +455,14 @@ This adds your CS2103T TA Priya Sharma with her phone number, email, office room
 💡 <strong>Tip:</strong> You can add a free-text note to a contact after creating them using the <code>remark</code> command. See <a href="#adding-a-remark-remark">Adding a remark</a>.
 </div>
 
+<div markdown="block" class="alert alert-warning">
+⚠️ <strong>Important:</strong> PingBook identifies contacts by their exact name, so you can't have two contacts with identical names. Names are case-sensitive and order-sensitive, meaning <code>Alex Yeoh</code>, <code>alex yeoh</code>, and <code>Yeoh Alex</code> are all considered different names. This uniqueness check applies to the whole address book, including archived contacts. If you try to add a contact with a name that matches any existing contact exactly (active or archived), PingBook will reject the addition. If you need to store two people with the same name, try variations like adding a middle initial (e.g. <code>Alex T. Yeoh</code> vs <code>Alex R. Yeoh</code>) or use tags to distinguish them.
+</div>
+
+<div markdown="block" class="alert alert-info">
+💡 <strong>Note:</strong> Unlike names, phone numbers and emails do <strong>not</strong> need to be unique. You can have multiple contacts sharing the same phone number or email address without any warning. This is useful if, for example, you store multiple people who share a work phone line or a shared email account.
+</div>
+
 [↑ Back to Table of Contents](#table-of-contents)
 
 ### Editing a contact: `edit`
@@ -464,6 +475,7 @@ Changes one or more details of an existing contact.
 - You must change at least one field; you cannot run `edit 3` with nothing after it.
 - Any field you leave out stays unchanged, **except tags**: if you include any `t/` value, it **replaces all** existing tags. To remove all tags entirely, use `t/` with nothing after it.
 - To clear the address field, use `a/` with nothing after it.
+- If you edit a name to one that already exists anywhere in PingBook (including archived contacts), the edit is rejected with the duplicate-person error. If this happens, run `listarchived` to check for a name conflict in archived contacts.
 
 ##### Steps
 
@@ -482,11 +494,11 @@ Changes one or more details of an existing contact.
 <span class="example-label">📌 <strong>Example: remove all tags from contact 3</strong></span>
 <pre class="example-command">edit 3 t/</pre>
 <span class="example-result-label">✅ <strong>Expected result:</strong></span>
-<pre class="example-result">Edited Person: Priya Sharma; Tags: []</pre>
+<pre class="example-result">Edited Person: Priya Sharma; Tags: (none)</pre>
 </div>
 
 <div markdown="block" class="alert alert-warning">
-⚠️ <strong>Watch out with tags:</strong> Editing tags replaces <em>all</em> existing tags at once. For example, <code>edit 3 t/cs2103ta</code> removes every previous tag and leaves only <code>cs2103ta</code>.
+⚠️ <strong>Watch out with tags:</strong> Editing tags replaces <em>all</em> existing tags at once. For example, <code>edit 3 t/cs2103ta</code> removes every previous tag and leaves only <code>cs2103ta</code>. Tag casing is also preserved, so entering <code>friends</code> and <code>Friends</code> creates two visually different tag labels.
 </div>
 
 <div markdown="block" class="alert alert-info">
@@ -503,10 +515,11 @@ Adds, updates, or removes a free-text note attached to a contact. This is useful
 
 - To remove an existing remark, type `r/` with nothing after it.
 - Supply `r/` exactly once. Commands with multiple `r/` prefixes are rejected.
+- `remark` only works on active contacts. To change a remark for an archived contact, first [unarchive](#restoring-an-archived-contact-unarchive) the contact.
 
 ##### Steps
 
-1. Type `list` and press **Enter** to find the contact's index number.
+1. Type `list` and press **Enter** to find the active contact's index number.
 2. Type `remark INDEX r/` followed by your note.
 3. Press **Enter**.
 
@@ -574,6 +587,10 @@ Shows all your active (non-archived) contacts.
 <pre class="example-result">Listed active contacts</pre>
 </div>
 
+<div markdown="block" class="alert alert-info">
+💡 <strong>Note:</strong> Although the <code>list</code> command doesn't modify any data, the data file (and its containing folder) must be writable for the command to work. If you get an error when running <code>list</code>, check that your data folder is writable and that no other application has locked the file.
+</div>
+
 [↑ Back to Table of Contents](#table-of-contents)
 
 ### Searching contacts: `find`
@@ -585,8 +602,9 @@ Shows only the contacts that match any of the keywords you search for.
 - The search is **case-insensitive**, meaning it does not matter whether you use uppercase or lowercase letters. `alex` matches `Alex`.
 - **Partial matching** is supported. Searching `Al` will find `Alex`, `Alice`, etc.
 - If you type multiple keywords, contacts matching **any one** of them are shown. For example, `find wei priya` shows everyone named Wei and everyone named Priya.
-- The search looks across **all fields**: name, phone number, email, address, remark, and tags. For example, `find 9123` finds contacts whose phone number contains `9123`, and `find ta` finds contacts tagged `ta`.
+- The search looks across **all fields**: name, phone number, email, address, remark, and tags. Matching is substring-based. For example, `find 9123` finds contacts whose phone number contains `9123`, and `find ta` can match a tag like `teaching-assistant` because it contains `ta`.
 - The search respects your current view. If you are viewing archived contacts (via `listarchived`), `find` searches only within archived contacts. If you are in the active view (via `list`), it searches only active contacts.
+- `find` takes plain keywords only. If you type a command-style prefix such as `n/John`, PingBook treats it as invalid input instead of searching for the literal text.
 
 ##### Steps
 
@@ -613,7 +631,8 @@ Shows only the contacts that have a specific tag attached to them.
 
 ##### Format: `filter t/TAG [t/MORE_TAGS]`
 
-- Tag matching is **case-insensitive**. `Friend` matches `friend`.
+- Tag matching is **case-insensitive** and requires a **full tag match**. For example, `filter t/ta` matches a tag named exactly `ta`, but does not match `teaching-assistant`.
+- Because filtering is case-insensitive, `filter t/friends` will match contacts tagged `friends` and `Friends`.
 - If you provide multiple tags, contacts that have **any one** of those tags are shown.
 - The filter respects your current view. If you are viewing archived contacts (via `listarchived`), `filter` searches only within archived contacts. Otherwise, it searches only active contacts.
 
@@ -642,6 +661,10 @@ Reorders your contact list so that starred contacts appear first, and all remain
 
 ##### Format: `sort`
 
+- The `sort` command reorders **all** contacts in your address book (both active and archived) alphabetically, regardless of which view you are currently in.
+- If you run `sort` while viewing archived contacts (via [`listarchived`](#listing-archived-contacts-listarchived)), the active contacts will also be reordered in the background. When you switch back to the active view (via [`list`](#listing-all-contacts-list)), you will see the newly sorted active contacts.
+- If you run `sort` while viewing a filtered list (e.g. after `find` or `filter`), the success message still says "Sorted all persons" because sorting is global. However, the on-screen list may remain filtered; run `list` (or `listarchived`) to view the full reordered list.
+
 ##### Steps
 
 1. Type `sort`.
@@ -652,7 +675,7 @@ Reorders your contact list so that starred contacts appear first, and all remain
 <pre class="example-command">sort</pre>
 <span class="example-result-label">✅ <strong>Expected result:</strong></span>
 <pre class="example-result">Sorted all persons (starred first, then by name)</pre>
-The contact list reorders accordingly.
+Sorting is applied to the whole address book. If your current view is filtered, you may still see only that filtered subset until you run <code>list</code> (or <code>listarchived</code>).
 </div>
 
 [↑ Back to Table of Contents](#table-of-contents)
@@ -666,6 +689,7 @@ Marks a contact as important so they always float to the top of the list.
 ##### Format: `star INDEX`
 
 - You can only star **active** (non-archived) contacts. To star an archived contact, first [unarchive](#restoring-an-archived-contact-unarchive) it.
+- After a successful `star` command, the contact's position updates immediately in the current list and moves into the starred section at the top.
 
 ##### Steps
 
@@ -684,7 +708,7 @@ Marks a contact as important so they always float to the top of the list.
 *A starred contact is marked with a star icon and floats to the top of the active list.*
 
 <div markdown="block" class="alert alert-info">
-💡 <strong>Tip:</strong> After starring several contacts, run <a href="#sorting-contacts-sort"><code>sort</code></a> to group all starred contacts at the top of the list.
+💡 <strong>Tip:</strong> Starred contacts already move to the top automatically. Run <a href="#sorting-contacts-sort"><code>sort</code></a> when you want to alphabetize names within the starred group and within the unstarred group.
 </div>
 
 [↑ Back to Table of Contents](#table-of-contents)
@@ -696,6 +720,7 @@ Removes the starred status from a contact.
 ##### Format: `unstar INDEX`
 
 - You can only unstar **active** (non-archived) contacts. To unstar an archived contact, first [unarchive](#restoring-an-archived-contact-unarchive) it.
+- After a successful `unstar` command, the contact's position updates immediately in the current list and moves out of the starred section.
 
 ##### Steps
 
@@ -756,6 +781,8 @@ Moves an archived contact back to your active list.
 1. Type `listarchived` and press **Enter** to see archived contacts and their index numbers.
 2. Type `unarchive` followed by the index number.
 3. Press **Enter**.
+
+If you run `unarchive` while the active contact list is showing, PingBook will tell you to run `listarchived` first.
 
 <div markdown="block" class="alert alert-success example-block">
 <span class="example-label">📌 <strong>Example: restore the first archived contact</strong></span>
@@ -848,13 +875,17 @@ la -> listarchived</pre>
 
 ### Editing the data file directly
 
-PingBook automatically saves all your contacts to a JSON file (a plain-text data file) at `data/pingbook.json` inside the same folder as `pingbook.jar`. If you ever need to make many changes at once, you can open this file in any plain-text editor (such as Notepad on Windows, TextEdit on macOS, or Gedit/nano on Linux) and edit it directly.
+PingBook automatically saves all your contacts to a JSON file (a plain-text data file) at `data/pingbook.json` inside the same folder as `pingbook.jar`. If you ever need to make many changes at once, you can edit this file in a plain-text editor (such as Notepad on Windows, TextEdit on macOS, or Gedit/nano on Linux) **only when PingBook is closed**.
+
+<div markdown="block" class="alert alert-warning">
+⚠️ <strong>Important:</strong> Do not edit <code>pingbook.json</code> while PingBook is running. PingBook keeps data in memory during a session and writes that in-memory copy back to disk when commands run, which can overwrite your external file edits without warning. Safe workflow: close PingBook → edit and save <code>pingbook.json</code> → relaunch PingBook.
+</div>
 
 ![The pingbook.json data file open in a text editor](images/SaveJSON.png)
 *`pingbook.json` open in a plain-text editor, showing the raw contact data.*
 
 <div markdown="block" class="alert alert-warning">
-⚠️ <strong>Warning:</strong> JSON files must follow a strict format. If you accidentally delete a comma, bracket, or quotation mark, the file becomes invalid. When PingBook detects an invalid file, it discards all data and starts completely empty on the next launch. Always make a backup copy of <code>pingbook.json</code> (e.g. save a copy as <code>pingbook_backup.json</code>) before editing it manually.
+⚠️ <strong>Warning:</strong> JSON files must follow a strict format. If you accidentally delete a comma, bracket, or quotation mark, the file becomes invalid. PingBook keeps a temporary backup file (`pingbook.json.bak`) only while saving; under normal use it is removed again after a successful save, so you usually will not see it in the folder. If an interrupted or failed save leaves that file behind, PingBook will try to recover the whole data snapshot from it at startup, restoring both contacts and aliases together. If the backup is also invalid or does not exist, PingBook starts with an empty address book and an empty alias registry. To avoid losing data, always make a backup copy of <code>pingbook.json</code> (e.g. save a copy as <code>pingbook_backup.json</code>) before editing it manually.
 </div>
 
 [↑ Back to Table of Contents](#table-of-contents)
@@ -863,7 +894,7 @@ PingBook automatically saves all your contacts to a JSON file (a plain-text data
 
 ### Viewing help: `help`
 
-Opens the help window, which shows a link to this User Guide.
+Opens the help window, which displays a link to this User Guide. You can click the **Copy** button in the window to copy the link, then paste it into a web browser to access the User Guide.
 
 ##### Format: `help`
 
@@ -876,7 +907,7 @@ Opens the help window, which shows a link to this User Guide.
 <span class="example-label">📌 <strong>Example: open the help window</strong></span>
 <pre class="example-command">help</pre>
 <span class="example-result-label">✅ <strong>Expected result:</strong></span>
-A help window opens showing a link to this User Guide.
+A help window opens displaying a link to this User Guide. Click the <strong>Copy</strong> button to copy the link to your clipboard, then paste it into your web browser to view the full User Guide.
 </div>
 
 <div markdown="block" class="alert alert-info">
@@ -973,6 +1004,14 @@ This means PingBook did not recognise the word you typed as a valid command. Che
 ##### App window opens off-screen after disconnecting a monitor: If you moved PingBook to a second screen and then unplugged that screen, the app window might open in a position you cannot see the next time you launch it. To fix this: find and delete the file `preferences.json` from the folder containing `pingbook.jar`, then relaunch the app. This file stores the window position, and deleting it resets the window to the centre of your screen.
 
 ##### Help window does not reappear after being minimised: If you minimise the help window and then press **F1** or type `help` again, no new window appears. The help window is still open; it is just hidden at the bottom of your screen. Look for it in your **taskbar** (the bar of open apps along the bottom of your screen on Windows, or the Dock on macOS) and click it to bring it back.
+
+[↑ Back to Table of Contents](#table-of-contents)
+
+## Planned Enhancements
+
+The following improvements are planned for future versions:
+
+##### Expanded tag color palette: Currently, tags are assigned colors based on a limited palette, which can lead to multiple different tags appearing in the same color (hash collisions). This makes it harder to visually categorize and distinguish between tags. A future version will feature a larger color palette and improved color assignment algorithm to ensure better visual differentiation between tags.
 
 [↑ Back to Table of Contents](#table-of-contents)
 

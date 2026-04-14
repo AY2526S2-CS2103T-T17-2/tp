@@ -30,6 +30,8 @@ public class RemarkCommand extends Command {
 
     public static final String MESSAGE_ADD_REMARK_SUCCESS = "Added remark to Person: %1$s";
     public static final String MESSAGE_DELETE_REMARK_SUCCESS = "Removed remark from Person: %1$s";
+        public static final String MESSAGE_PERSON_ARCHIVED =
+            "Cannot add or edit a remark for an archived person. Unarchive the person first.";
 
     private final Index index;
     private final Remark remark;
@@ -54,6 +56,10 @@ public class RemarkCommand extends Command {
         }
 
         Person personToEdit = lastShownList.get(index.getZeroBased());
+        if (personToEdit.isArchived()) {
+            throw new CommandException(MESSAGE_PERSON_ARCHIVED);
+        }
+
         Person editedPerson = personToEdit.withRemark(remark);
 
         model.setPerson(personToEdit, editedPerson);

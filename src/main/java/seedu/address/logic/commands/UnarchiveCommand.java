@@ -1,6 +1,7 @@
 package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.model.Model.PREDICATE_SHOW_ARCHIVED_PERSONS;
 
 import java.util.List;
 
@@ -21,7 +22,9 @@ public class UnarchiveCommand extends Command {
             + "Example: " + COMMAND_WORD + " 1";
 
     public static final String MESSAGE_UNARCHIVE_PERSON_SUCCESS = "Unarchived Person: %1$s";
-    public static final String MESSAGE_PERSON_ALREADY_ACTIVE = "This person is already active.";
+        public static final String MESSAGE_NO_ARCHIVED_CONTACTS_SHOWN =
+            "No archived contacts are shown. Run listarchived first, then use unarchive INDEX.";
+        public static final String MESSAGE_PERSON_ALREADY_ACTIVE = "This person is already active.";
 
     private final Index targetIndex;
 
@@ -32,6 +35,10 @@ public class UnarchiveCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
+        if (model.getViewPredicate() != PREDICATE_SHOW_ARCHIVED_PERSONS) {
+            throw new CommandException(MESSAGE_NO_ARCHIVED_CONTACTS_SHOWN);
+        }
+
         List<Person> lastShownList = model.getFilteredPersonList();
 
         if (targetIndex.getZeroBased() >= lastShownList.size()) {

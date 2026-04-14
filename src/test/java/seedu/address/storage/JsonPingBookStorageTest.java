@@ -10,8 +10,10 @@ import static seedu.address.testutil.TypicalPersons.IDA;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -209,6 +211,29 @@ public class JsonPingBookStorageTest {
         Optional<Map<String, String>> recoveredAliases = storageAt(filePath).readAliases();
         assertTrue(recoveredAliases.isPresent());
         assertEquals(aliases, recoveredAliases.get());
+    }
+
+    @Test
+    public void readAliases_invalidPrimaryPersonWithValidPrimaryAliases_recoversFromBackup() throws Exception {
+        Path filePath = tempPath("pingbook.json");
+        Path backupPath = tempPath("pingbook.json.bak");
+
+        AddressBook backupAddressBook = getTypicalAddressBook();
+        Map<String, String> backupAliases = new LinkedHashMap<>();
+        backupAliases.put("ls", "list");
+        backupAliases.put("la", "listarchived");
+
+        storageAt(backupPath).saveAll(backupAddressBook, backupAliases);
+
+        String corruptedPrimary = Files.readString(backupPath)
+                .replace("\"name\" : \"Alice Pauline\"",
+                        "\"name\" : \"Person with invalid name field: Ha!ns Mu@ster\"")
+                .replace("\"la\" : \"listarchived\"", "\"li\" : \"list\"");
+        Files.writeString(filePath, corruptedPrimary);
+
+        Optional<Map<String, String>> recoveredAliases = storageAt(filePath).readAliases();
+        assertTrue(recoveredAliases.isPresent());
+        assertEquals(backupAliases, recoveredAliases.get());
     }
 
     // ===================== saveAliases =====================
