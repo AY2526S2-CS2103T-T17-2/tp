@@ -163,6 +163,16 @@ The starred contacts feature adds a `starred` boolean state to `Person`, with th
 - The invariant check is performed once up front instead of repeating checks inside the extraction loop.
 - This is an internal sanity guard for parser correctness and does not change user-facing command behavior.
 
+### Contact field validation
+
+- Contact field validation is enforced in model value objects and reused by parser and storage paths.
+- `Email` accepts only `local-part@domain` values where:
+    - the local part starts and ends with an alphanumeric character and may include `+`, `_`, `.`, or `-` internally
+    - the domain contains at least one period separating labels (single-label domains such as `localhost` are rejected)
+    - each domain label starts and ends with an alphanumeric character and may include internal hyphens
+    - the final domain label is at least 2 characters long
+- These rules are implemented in `Email#isValidEmail(...)` and surfaced to users through `Email.MESSAGE_CONSTRAINTS`.
+
 #### Model and ordering
 
 - `Person` stores `starred` as a data field (default `false`).
